@@ -2,12 +2,14 @@ package org.example.mensajeriacliente.models;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
 
 public class Usuario {
     private int id;
     private String nombre;
     private String telefono;
     private String contrasenia;
+    private LocalDate lastLogin;
 
     // Constructor vacío (opcional)
     public Usuario() {
@@ -19,6 +21,23 @@ public class Usuario {
         this.nombre = nombre;
         this.telefono = telefono;
         this.contrasenia = contrasenia;
+        lastLogin= LocalDate.now();
+    }
+
+    public String getContrasenia() {
+        return contrasenia;
+    }
+
+    public void setContrasenia(String contrasenia) {
+        this.contrasenia = contrasenia;
+    }
+
+    public LocalDate getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(LocalDate lastLogin) {
+        this.lastLogin = lastLogin;
     }
 
     // Getters y Setters
@@ -46,13 +65,6 @@ public class Usuario {
         this.telefono = telefono;
     }
 
-    public String getContraseña() {
-        return contrasenia;
-    }
-
-    public void setContraseña(String contrasenia) {
-        this.contrasenia = contrasenia;
-    }
 
     // Método para imprimir los detalles del usuario (opcional)
     @Override

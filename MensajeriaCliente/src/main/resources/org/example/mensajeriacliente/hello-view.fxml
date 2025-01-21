@@ -19,6 +19,6 @@
   <PasswordField fx:id="txtPassword" promptText="Contraseña" />
 
   <!-- Buttons -->
-  <Button fx:id="btnLogin" text="Iniciar sesión" onAction="#onLogin"/>
-  <Button fx:id="btnRegistrar" text="Registrar usuario" onAction="#onRegistrar"/>
+  <Button fx:id="btnLogin" text="Iniciar sesión" onAction="#iniciarSesion"/>
+  <Button fx:id="btnRegistrar" text="Registrar usuario" onAction="#registrarUsuario"/>
 </VBox>

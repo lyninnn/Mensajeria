@@ -1,11 +1,15 @@
 package org.example.mensajeriacliente;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import org.example.mensajeriacliente.managers.ClienteManager;
 
 public class HelloController {
@@ -33,11 +37,10 @@ public class HelloController {
 
     @FXML
     private void initialize() {
-        // Configurar los manejadores de eventos para los botones
-        btnLogin.setOnAction(event -> iniciarSesion());
-        btnRegistrar.setOnAction(event -> registrarUsuario());
+
     }
 
+    @FXML
     private void iniciarSesion() {
         String usuario = txtUsuario.getText();
         String password = txtPassword.getText();
@@ -53,31 +56,28 @@ public class HelloController {
             boolean loginExitoso = clienteManager.login(usuario, password); // Asume que existe un método `login`
 
             if (loginExitoso) {
+                clienteManager.iniciarCliente();
                 lblStatus.setText("Inicio de sesión exitoso.");
             } else {
                 lblStatus.setText("Credenciales incorrectas.");
             }
         }
     }
-
+    @FXML
     private void registrarUsuario() {
-        String usuario = txtUsuario.getText();
-        String password = txtPassword.getText();
+        try {
+            // Cargar la nueva vista de registro
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("usuarioView.fxml"));
+            Parent root = loader.load();
 
-        if (usuario.isEmpty() || password.isEmpty()) {
-            mostrarAlerta("Error", "Por favor, completa todos los campos.", Alert.AlertType.WARNING);
-            return;
-        }
-
-        // Lógica para registrar un nuevo usuario
-        if (clienteManager != null) {
-            boolean registroExitoso = clienteManager.registrar(usuario, password); // Asume que existe un método `registrar`
-
-            if (registroExitoso) {
-                lblStatus.setText("Usuario registrado exitosamente.");
-            } else {
-                lblStatus.setText("El usuario ya existe o hubo un error.");
-            }
+            // Obtener la escena actual y reemplazarla con la nueva
+            Stage stage = (Stage) btnRegistrar.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Registrar Usuario");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo abrir la página de registro.", Alert.AlertType.ERROR);
         }
     }
 

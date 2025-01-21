@@ -50,6 +50,50 @@ public class ClienteManager {
     }
 
     public boolean login(String usuario, String password) {
+        try (Socket socket = new Socket(host, puerto);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+
+            // Enviar las credenciales al servidor (puedes estructurarlas como desees)
+            out.println("LOGIN " + usuario + " " + password);
+
+            // Esperar la respuesta del servidor
+            String respuesta = in.readLine();
+
+            // Supongamos que el servidor responde con "OK" si el login fue exitoso
+            return "OK".equals(respuesta);
+
+        } catch (UnknownHostException e) {
+            System.err.println("No se pudo conectar al host: " + host);
+        } catch (IOException e) {
+            System.err.println("Error de conexión: " + e.getMessage());
+        }
+
+        return false; // Si no se pudo realizar el login, devolver false
     }
+    public boolean registra(String usuario, String telefono, String password) {
+        try (Socket socket = new Socket(host, puerto);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+
+            // Enviar los datos para el registro al servidor (puedes estructurarlo como desees)
+            out.println("REGISTER " + usuario + " " + telefono + " " + password);
+
+            // Esperar la respuesta del servidor
+            String respuesta = in.readLine();
+
+            // Supongamos que el servidor responde con "OK" si el registro fue exitoso
+            return "OK".equals(respuesta);
+
+        } catch (UnknownHostException e) {
+            System.err.println("No se pudo conectar al host: " + host);
+        } catch (IOException e) {
+            System.err.println("Error de conexión: " + e.getMessage());
+        }
+
+        return false; // Si no se pudo realizar el registro, devolver false
+    }
+
+
 }
 

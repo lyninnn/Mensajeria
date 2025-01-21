@@ -12,5 +12,7 @@ module org.example.mensajeriacliente {
     requires com.almasb.fxgl.all;
 
     opens org.example.mensajeriacliente to javafx.fxml;
+    opens org.example.mensajeriacliente.controllers to javafx.fxml;
     exports org.example.mensajeriacliente;
+    exports org.example.mensajeriacliente.controllers;
 }

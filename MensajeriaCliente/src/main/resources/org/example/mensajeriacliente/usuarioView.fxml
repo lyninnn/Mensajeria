@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.mensajeriacliente.controllers.UsuarioView"
+            prefHeight="400.0" prefWidth="600.0">
+    <!-- Título del formulario -->
+    <Label text="Registro de Usuario" layoutX="250.0" layoutY="20.0"/>
+
+    <!-- Nombre de usuario -->
+    <TextField fx:id="txtUsuario" promptText="Nombre de usuario" layoutX="150.0" layoutY="80.0" prefWidth="300.0"/>
+
+    <!-- Contraseña -->
+    <PasswordField fx:id="txtPassword" promptText="Contraseña" layoutX="150.0" layoutY="140.0" prefWidth="300.0"/>
+
+    <!-- Confirmar contraseña -->
+    <PasswordField fx:id="txtConfirmPassword" promptText="Confirmar contraseña" layoutX="150.0" layoutY="200.0" prefWidth="300.0"/>
+
+    <!-- Teléfono -->
+    <TextField fx:id="txtTelefono" promptText="Teléfono" layoutX="150.0" layoutY="260.0" prefWidth="300.0"/>
+
+    <!-- Botón para registrar -->
+    <Button fx:id="btnRegistrar" text="Registrar" layoutX="250.0" layoutY="320.0" onAction="#onRegistrar"/>
+</AnchorPane>
