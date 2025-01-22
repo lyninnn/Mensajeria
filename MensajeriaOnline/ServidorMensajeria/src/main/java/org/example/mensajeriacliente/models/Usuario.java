@@ -17,8 +17,8 @@ public class Usuario implements Serializable{
     }
     public Usuario(String nombre, String contrasenia,String telefono) {
         this.nombre = nombre;
-        this.telefono = telefono;
         this.contrasenia = contrasenia;
+        this.telefono = telefono;
         lastLogin= LocalDate.now();
     }
 
@@ -26,8 +26,8 @@ public class Usuario implements Serializable{
     public Usuario(int id,String nombre,  String contrasenia,String telefono) {
         this.id=id;
         this.nombre = nombre;
-        this.telefono = telefono;
         this.contrasenia = contrasenia;
+        this.telefono = telefono;
         lastLogin= LocalDate.now();
     }
 
@@ -86,6 +86,3 @@ public class Usuario implements Serializable{
                 '}';
     }
 }
-
-
-

@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.example.mensajeriacliente.managers.ClienteManager;
+import org.example.mensajeriacliente.models.Usuario;
 
 import java.io.IOException;
 
@@ -27,7 +28,7 @@ public class UsuarioView {
 
     @FXML
     private Button btnRegistrar; // Botón para registrar el usuario
-    private ClienteManager clienteManager;
+    private ClienteManager clienteManager= new ClienteManager();
 
     // Método para registrar al usuario
     @FXML
@@ -50,9 +51,9 @@ public class UsuarioView {
         }
 
         // Crear un nuevo usuario
-
+        Usuario usuario = new Usuario(nombreUsuario,confirmPassword,telefono);
         // Registrar el usuario en la base de datos
-        boolean registroExitoso = clienteManager.registra(nombreUsuario,telefono,confirmPassword);
+        boolean registroExitoso = clienteManager.registra(usuario);
 
         if (registroExitoso) {
             mostrarAlerta("Éxito", "Usuario registrado exitosamente.");
@@ -75,7 +76,7 @@ public class UsuarioView {
     private void volverAlMain() {
         try {
             // Cargar la vista principal (main.fxml)
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/whatsapp/main.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/mensajeriacliente/hello-view.fxml"));
             Parent root = loader.load();
 
             // Obtener la ventana actual

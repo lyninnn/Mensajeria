@@ -12,6 +12,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.example.mensajeriacliente.managers.ClienteManager;
 
+import java.io.IOException;
+
 public class HelloController {
 
     @FXML
@@ -53,14 +55,29 @@ public class HelloController {
         // Aquí puedes integrar lógica de clienteManager para manejar el inicio de sesión
         if (clienteManager != null) {
             // Simulación de un inicio de sesión exitoso
+            System.out.println(usuario+" "+password);
             boolean loginExitoso = clienteManager.login(usuario, password); // Asume que existe un método `login`
 
             if (loginExitoso) {
+                redirigirAInicio();
                 clienteManager.iniciarCliente();
-                lblStatus.setText("Inicio de sesión exitoso.");
-            } else {
-                lblStatus.setText("Credenciales incorrectas.");
             }
+        }
+    }
+    private void redirigirAInicio() {
+        try {
+            // Cargar la vista de inicio
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("org/example/mensajeriacliente/inicio.fxml"));
+            Parent root = loader.load();
+
+            // Obtener la escena actual y cambiarla
+            Stage stage = (Stage) btnLogin.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la página de inicio.", Alert.AlertType.ERROR);
         }
     }
     @FXML
