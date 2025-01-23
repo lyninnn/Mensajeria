@@ -22,7 +22,7 @@ public class InicioCon {
     @FXML
     private Button btnModificar;
 
-    private ClienteManager clienteManager;
+    private ClienteManager clienteManager=new ClienteManager();
     private ObservableList<Usuario> usuariosList = FXCollections.observableArrayList();
 
     // Método para cargar todos los usuarios

@@ -67,7 +67,7 @@ public class HelloController {
     private void redirigirAInicio() {
         try {
             // Cargar la vista de inicio
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("org/example/mensajeriacliente/inicio.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("inicio.fxml"));
             Parent root = loader.load();
 
             // Obtener la escena actual y cambiarla

@@ -10,6 +10,7 @@ module org.example.mensajeriacliente {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
+    requires java.sql;
 
     opens org.example.mensajeriacliente to javafx.fxml;
     opens org.example.mensajeriacliente.controllers to javafx.fxml;
