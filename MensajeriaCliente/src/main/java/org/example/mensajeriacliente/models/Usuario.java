@@ -9,8 +9,8 @@ public class Usuario implements Serializable{
     private int id;
     private String nombre;
     private String contrasenia;
-    private String telefono;
     private LocalDate lastLogin;
+    private String telefono;
 
     // Constructor vacío (opcional)
     public Usuario() {

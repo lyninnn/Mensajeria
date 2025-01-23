@@ -60,7 +60,23 @@ public class ManejadorCliente implements Runnable {
 
             } else if ("LISTA".equals(comando)) {
 
-            }
+
+                listaUsuario(); // Llenar la lista de usuarios
+                System.out.println("Lista de usuarios antes de enviar: " + usuarioList.size());
+                if (!usuarioList.isEmpty()) {
+                    for (Usuario u : usuarioList) {
+                        System.out.println("Enviando usuario: " + u.getNombre());
+                    }
+                } else {
+                    System.out.println("La lista está vacía.");
+                }
+                out.writeObject(usuarioList); // Enviar la lista al cliente
+
+
+
+
+
+        }
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -104,11 +120,12 @@ public class ManejadorCliente implements Runnable {
             }
 
             // Si el usuario no existe, insertarlo
-            String insertQuery = "INSERT INTO Usuarios (name,password,telefono) VALUES (?, ?, ?)";
+            String insertQuery = "INSERT INTO Usuarios (name,password,last_Online,telefono) VALUES (?, ?,?, ?)";
             PreparedStatement insertStmt = conexionDB.prepareStatement(insertQuery);
             insertStmt.setString(1, usuario.getNombre());
             insertStmt.setString(2, usuario.getContrasenia());
-            insertStmt.setString(3, usuario.getTelefono());
+            insertStmt.setString(3, String.valueOf(LocalDate.now()));
+            insertStmt.setString(4, usuario.getTelefono());
             insertStmt.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -116,30 +133,37 @@ public class ManejadorCliente implements Runnable {
             return false;
         }
     }
-    private List<Usuario> listaUsuario(Usuario usuario) {
-
+    private List<Usuario> listaUsuario() {
         try {
+            System.out.println("Ejecutando consulta para obtener usuarios...");
             String query = "SELECT * FROM usuarios";
             PreparedStatement stmt = conexionDB.prepareStatement(query);
+            System.out.println("estoy aqui");
             ResultSet rs = stmt.executeQuery();
 
-            // Agregar cada usuario encontrado a la lista
+            usuarioList.clear(); // Asegúrate de limpiar la lista antes de llenarla
+            Usuario usuarioEncontrado = new Usuario();
+            System.out.println("estoy aqui2");
             while (rs.next()) {
-                Usuario usuarioEncontrado = new Usuario();
-                usuarioEncontrado.setId(rs.getInt("id")); // Supongamos que tienes un campo ID
+                usuarioEncontrado.setId(rs.getInt("IdUser"));
                 usuarioEncontrado.setNombre(rs.getString("name"));
                 usuarioEncontrado.setContrasenia(rs.getString("password"));
-                usuarioEncontrado.setLastLogin(LocalDate.parse(rs.getString("last_Online")));
+                usuarioEncontrado.setLastLogin(rs.getDate("last_Online").toLocalDate());
                 usuarioEncontrado.setTelefono(rs.getString("telefono"));
-                this.usuarioList.add(usuarioEncontrado);
+                usuarioList.add(usuarioEncontrado);
+                System.out.println("Usuario encontrado: " + usuarioEncontrado.getNombre());
             }
 
+            System.out.println("Número de usuarios encontrados: " + usuarioList.size());
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al ejecutar la consulta: " + e.getMessage());
         }
 
-        return this.usuarioList;
+        return usuarioList;
     }
+
+
 
 }
 

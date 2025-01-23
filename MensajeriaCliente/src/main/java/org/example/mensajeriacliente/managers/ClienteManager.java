@@ -111,33 +111,30 @@ public class ClienteManager {
              ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
              ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-            // Enviar la solicitud al servidor
+            // Enviar el comando LISTA al servidor
             out.writeObject("LISTA");
 
             // Leer la respuesta del servidor
             Object respuesta = in.readObject();
 
-            if (respuesta instanceof List<?>) {
-                // Verificar que la respuesta sea una lista y procesarla
+            // Verificar si la respuesta es del tipo esperado
+            if (respuesta instanceof List) {
                 listaUsuarios = (List<Usuario>) respuesta;
                 System.out.println("Lista de usuarios recibida:");
                 for (Usuario usuario : listaUsuarios) {
-                    System.out.println("Nombre: " + usuario.getNombre() + ", Teléfono: " + usuario.getTelefono());
+                    System.out.println("Usuario: " + usuario.getNombre());
                 }
             } else {
-                System.err.println("Respuesta inesperada del servidor: " + respuesta);
+                System.err.println("El servidor no devolvió una lista.");
             }
 
-        } catch (UnknownHostException e) {
-            System.err.println("No se pudo conectar al host: " + host);
-        } catch (IOException e) {
-            System.err.println("Error de conexión: " + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            System.err.println("Error al procesar la respuesta del servidor: " + e.getMessage());
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error al recibir la lista de usuarios: " + e.getMessage());
         }
 
-        return listaUsuarios; // Retornar la lista de usuarios, aunque esté vacía en caso de error
+        return listaUsuarios;
     }
+
     // Eliminar usuario
     public boolean eliminarUsuario(int usuarioId) {
         try (Socket socket = new Socket(host, puerto);
