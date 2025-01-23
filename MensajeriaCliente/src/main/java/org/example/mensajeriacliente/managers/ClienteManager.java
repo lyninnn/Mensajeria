@@ -136,14 +136,14 @@ public class ClienteManager {
     }
 
     // Eliminar usuario
-    public boolean eliminarUsuario(int usuarioId) {
+    public boolean eliminarUsuario(Usuario usuario) {
         try (Socket socket = new Socket(host, puerto);
              ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
              ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
             // Enviar solicitud para eliminar usuario
             out.writeObject("ELIMINAR");
-            out.writeInt(usuarioId);
+            out.writeObject(usuario);
 
             // Leer respuesta del servidor
             Object respuesta = in.readObject();

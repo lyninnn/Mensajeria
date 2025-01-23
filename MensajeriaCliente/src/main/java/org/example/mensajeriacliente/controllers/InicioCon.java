@@ -41,7 +41,7 @@ public class InicioCon {
     public void onEliminar() {
         Usuario usuarioSeleccionado = listUsuarios.getSelectionModel().getSelectedItem();
         if (usuarioSeleccionado != null) {
-            boolean exito = clienteManager.eliminarUsuario(usuarioSeleccionado.getId());
+            boolean exito = clienteManager.eliminarUsuario(usuarioSeleccionado);
             if (exito) {
                 mostrarAlerta("Éxito", "Usuario eliminado correctamente.");
                 cargarUsuarios(); // Recargar la lista después de eliminar

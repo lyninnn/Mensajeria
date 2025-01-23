@@ -71,12 +71,10 @@ public class ManejadorCliente implements Runnable {
                     System.out.println("La lista está vacía.");
                 }
                 out.writeObject(usuarioList); // Enviar la lista al cliente
-
-
-
-
-
-        }
+        } else if ("ELIMINAR".equals(comando)) {
+                Usuario usuario = (Usuario) in.readObject();
+                eliminarUsuario(usuario);
+            }
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -162,6 +160,33 @@ public class ManejadorCliente implements Runnable {
 
         return usuarioList;
     }
+    private boolean eliminarUsuario(Usuario usuario) {
+        // Método para eliminar al usuario en la base de datos
+        try {
+            // Verificar si el usuario existe
+            String checkQuery = "SELECT * FROM Usuarios WHERE name = ?";
+            PreparedStatement checkStmt = conexionDB.prepareStatement(checkQuery);
+            checkStmt.setString(1, usuario.getNombre());
+            ResultSet rs = checkStmt.executeQuery();
+
+            if (rs.next()) {
+                // El usuario existe, ahora procederemos a eliminarlo
+                String deleteQuery = "DELETE FROM Usuarios WHERE IdUser = ?";
+                PreparedStatement deleteStmt = conexionDB.prepareStatement(deleteQuery);
+                deleteStmt.setInt(1, usuario.getId());
+                int affectedRows = deleteStmt.executeUpdate();
+
+                return affectedRows > 0;  // Si se eliminó al menos un usuario, el método retorna true
+            } else {
+                return false; // El usuario no existe
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Error en la eliminación
+        }
+    }
+
 
 
 

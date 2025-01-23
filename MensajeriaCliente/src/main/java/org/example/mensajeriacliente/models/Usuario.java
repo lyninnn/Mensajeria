@@ -80,7 +80,6 @@ public class Usuario implements Serializable{
         return "Usuario{" +
                 "id=" + id +
                 ", nombre='" + nombre + '\'' +
-                ", contrasenia='" + contrasenia + '\'' +
                 ", telefono='" + telefono + '\'' +
                 ", lastLogin=" + lastLogin +
                 '}';
