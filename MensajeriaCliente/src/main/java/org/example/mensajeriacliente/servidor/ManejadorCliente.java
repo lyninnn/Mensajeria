@@ -140,9 +140,9 @@ public class ManejadorCliente implements Runnable {
             ResultSet rs = stmt.executeQuery();
 
             usuarioList.clear(); // Asegúrate de limpiar la lista antes de llenarla
-            Usuario usuarioEncontrado = new Usuario();
             System.out.println("estoy aqui2");
             while (rs.next()) {
+                Usuario usuarioEncontrado = new Usuario();
                 usuarioEncontrado.setId(rs.getInt("IdUser"));
                 usuarioEncontrado.setNombre(rs.getString("name"));
                 usuarioEncontrado.setContrasenia(rs.getString("password"));

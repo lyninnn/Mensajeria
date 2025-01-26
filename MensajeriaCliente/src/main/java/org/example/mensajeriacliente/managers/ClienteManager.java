@@ -11,41 +11,48 @@ import java.util.List;
 public class ClienteManager {
     private String host = "localhost"; // Dirección del servidor
     private int puerto = 12345;        // Puerto del servidor
+    private Socket socket;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+
     public void iniciarCliente() {
-        try (Socket socket = new Socket(host, puerto);
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))) {
+        try {
+            socket = new Socket(host, puerto);
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
 
             System.out.println("Conectado al servidor en " + host + ":" + puerto);
 
-            // Hilo para leer mensajes del servidor de manera asíncrona
-            Thread listener = new Thread(() -> {
-                try {
-                    Object respuesta;
-                    while ((respuesta = in.readObject()) != null) {
-                        System.out.println("Servidor: " + respuesta);
-                    }
-                } catch (IOException | ClassNotFoundException e) {
-                    System.out.println("Se perdió la conexión con el servidor.");
-                }
-            });
-            listener.start();
+            // Inicia el hilo para escuchar mensajes del servidor
+            Thread listenerThread = new Thread(() -> escucharRespuestas());
+            listenerThread.start();
 
-            // Enviar datos al servidor
-            String entradaUsuario;
-            while ((entradaUsuario = stdIn.readLine()) != null) {
-                out.writeObject(entradaUsuario);
-                if (entradaUsuario.equalsIgnoreCase("salir")) {
-                    System.out.println("Desconectando...");
-                    break;
-                }
-            }
-
-        } catch (UnknownHostException e) {
-            System.err.println("No se pudo conectar al host: " + host);
         } catch (IOException e) {
-            System.err.println("Error de conexión: " + e.getMessage());
+            System.err.println("Error al conectar con el servidor: " + e.getMessage());
+        } finally {
+            cerrarConexiones();
+        }
+    }
+
+
+    private void escucharRespuestas() {
+        try {
+            Object respuesta;
+            while ((respuesta = in.readObject()) != null) {
+                System.out.println("Servidor: " + respuesta);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Se perdió la conexión con el servidor.");
+        }
+    }
+
+    private void cerrarConexiones() {
+        try {
+            if (in != null) in.close();
+            if (out != null) out.close();
+            if (socket != null && !socket.isClosed()) socket.close();
+        } catch (IOException e) {
+            System.err.println("Error al cerrar conexiones: " + e.getMessage());
         }
     }
 
