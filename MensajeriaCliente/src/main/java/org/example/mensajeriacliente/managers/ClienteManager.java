@@ -189,6 +189,29 @@ public class ClienteManager {
 
         return false;
     }
+    public Usuario encontrarUsuario(String nombre) {
+        try (Socket socket = new Socket(host, puerto);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+
+            // Enviar solicitud para buscar usuario
+            out.writeObject("BUSCAR"); // Corregido de "BUSACR" a "BUSCAR"
+            out.writeObject(nombre); // Enviar el nombre del usuario a buscar
+
+            // Leer respuesta del servidor
+            Object respuesta = in.readObject();
+            if (respuesta instanceof Usuario) {
+                return (Usuario) respuesta; // Retorna el usuario encontrado
+            } else {
+                System.err.println("Respuesta inesperada al buscar usuario.");
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error al buscar usuario: " + e.getMessage());
+        }
+
+        return null; // Retorna null si no se encuentra o ocurre un error
+    }
+
 
 
 }

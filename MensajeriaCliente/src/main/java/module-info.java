@@ -11,6 +11,7 @@ module org.example.mensajeriacliente {
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
     requires java.sql;
+    requires spring.security.crypto;
 
     opens org.example.mensajeriacliente to javafx.fxml;
     opens org.example.mensajeriacliente.controllers to javafx.fxml;
