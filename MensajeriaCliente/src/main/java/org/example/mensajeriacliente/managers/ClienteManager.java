@@ -22,24 +22,20 @@ public class ClienteManager {
             socket = new Socket(host, puerto);
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
-
-            conectado = true; // Marca que el cliente está conectado
+            conectado = true;
             System.out.println("Conectado al servidor en " + host + ":" + puerto);
 
-            // Inicia el hilo para escuchar mensajes del servidor
+            // Iniciar hilo para escuchar las respuestas del servidor sin bloquear el hilo principal
             Thread listenerThread = new Thread(this::escucharRespuestas);
+            listenerThread.setDaemon(true); // Hacer que el hilo de escucha sea un hilo "demonio"
             listenerThread.start();
 
-            // Aquí puedes agregar lógica para enviar comandos al servidor
-            enviarComandos(); // Método para manejar la interacción con el usuario
+            // Aquí puedes manejar la entrada del usuario u otras acciones sin esperar que el listener termine
+            // Esto permite que la aplicación no se bloquee y el cliente siga interactuando
+            // enviarComandos(); // Si deseas mantener esta funcionalidad, descomenta este método.
 
-            // Espera a que el hilo del listener termine
-            listenerThread.join();
-
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             System.err.println("Error al conectar con el servidor: " + e.getMessage());
-        } finally {
-            cerrarConexiones();
         }
     }
 
@@ -56,33 +52,23 @@ public class ClienteManager {
         }
     }
 
-    private void enviarComandos() {
-        try (Scanner scanner = new Scanner(System.in)) {
-            while (conectado) {
-                System.out.print("Ingrese comando: ");
-                String comando = scanner.nextLine();
-                out.writeObject(comando); // Envía el comando al servidor
-                out.flush();
+//    private void enviarComandos() {
+//        try (Scanner scanner = new Scanner(System.in)) {
+//            while (conectado) {
+//                System.out.print("Ingrese comando: ");
+//                String comando = scanner.nextLine();
+//                out.writeObject(comando);
+//                out.flush();
+//                if ("SALIR".equalsIgnoreCase(comando)) {
+//                    conectado = false;
+//                }
+//            }
+//        } catch (IOException e) {
+//            System.err.println("Error al enviar comandos: " + e.getMessage());
+//        }
+//    }
 
-                if ("SALIR".equalsIgnoreCase(comando)) {
-                    conectado = false; // Finaliza el cliente si se envía "SALIR"
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error al enviar comandos: " + e.getMessage());
-        }
-    }
 
-    private void cerrarConexiones() {
-        try {
-            if (in != null) in.close();
-            if (out != null) out.close();
-            if (socket != null && !socket.isClosed()) socket.close();
-            System.out.println("Conexión cerrada.");
-        } catch (IOException e) {
-            System.err.println("Error al cerrar conexiones: " + e.getMessage());
-        }
-    }
 
 
     public boolean login(String nombre, String contraseña) {

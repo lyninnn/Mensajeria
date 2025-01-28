@@ -34,8 +34,8 @@ public class ManejadorCliente implements Runnable {
             out = new ObjectOutputStream(clienteSocket.getOutputStream());
             in = new ObjectInputStream(clienteSocket.getInputStream());
 
-            while (continuar) {
                 String comando = (String) in.readObject();
+            while (continuar) {
 
                 switch (comando) {
                     case "LOGIN":
@@ -228,48 +228,35 @@ public class ManejadorCliente implements Runnable {
         }
     }
     private boolean modificarUsuario(Usuario usuario) {
-        // Método para modificar datos de un usuario en la base de datos
         try {
-            // Verificar si el usuario existe
-            String checkQuery = "SELECT * FROM Usuarios WHERE name = ?";
-            PreparedStatement checkStmt = conexionDB.prepareStatement(checkQuery);
-            checkStmt.setString(1, usuario.getNombre());
+            String checkQuery = "SELECT password FROM Usuarios WHERE IdUser = ?";
+            try (PreparedStatement checkStmt = conexionDB.prepareStatement(checkQuery)) {
+                checkStmt.setInt(1, usuario.getId());
+                ResultSet rs = checkStmt.executeQuery();
 
+                if (rs.next()) {
+                    String storedHashedPassword = rs.getString("password");
 
-            ResultSet rs = checkStmt.executeQuery();
+                    String newHashedPassword = usuario.getContrasenia().equals(storedHashedPassword) ?
+                            storedHashedPassword : BCrypt.hashpw(usuario.getContrasenia(), BCrypt.gensalt());
 
-            if (rs.next()) {
-                // El usuario existe, ahora procederemos a modificarlo
+                    String updateQuery = "UPDATE Usuarios SET name = ?, password = ?, telefono = ? WHERE IdUser = ?";
+                    try (PreparedStatement updateStmt = conexionDB.prepareStatement(updateQuery)) {
+                        updateStmt.setString(1, usuario.getNombre());
+                        updateStmt.setString(2, newHashedPassword);
+                        updateStmt.setString(3, usuario.getTelefono());
+                        updateStmt.setInt(4, usuario.getId());
 
-                // Cifrar la contraseña si ha sido modificada
-                String hashedPassword = BCrypt.hashpw(usuario.getContrasenia(), BCrypt.gensalt());
-
-                String updateQuery = "UPDATE Usuarios SET name = ?, password = ?, telefono = ? WHERE IdUser = ?";
-                PreparedStatement updateStmt = conexionDB.prepareStatement(updateQuery);
-                updateStmt.setString(1, usuario.getNombre());
-                updateStmt.setString(2, hashedPassword);  // Usamos la contraseña cifrada
-                updateStmt.setString(3, usuario.getTelefono());  // Asumí que el teléfono es un String, sin necesidad de convertir a int
-                updateStmt.setInt(4, usuario.getId());
-
-                int affectedRows = updateStmt.executeUpdate();
-
-                // Cerrar recursos
-                updateStmt.close();
-                rs.close();
-                checkStmt.close();
-
-                return affectedRows > 0; // Retorna true si se actualizó al menos un usuario
-            } else {
-                rs.close();
-                checkStmt.close();
-                return false; // El usuario no existe
+                        return updateStmt.executeUpdate() > 0;
+                    }
+                }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // Error en la modificación
         }
+        return false;
     }
+
 
 
 
