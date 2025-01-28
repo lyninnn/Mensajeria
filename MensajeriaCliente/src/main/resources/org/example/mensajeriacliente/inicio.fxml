@@ -5,21 +5,28 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.scene.text.Font?>
+
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.mensajeriacliente.controllers.InicioCon"
             prefHeight="400.0" prefWidth="600.0">
-    <ListView fx:id="listUsuarios" layoutY="85.0" prefHeight="352.0" prefWidth="385.0" />
-    <Button fx:id="onSendMessage" layoutX="261.0" layoutY="52.0" onAction="#onSendMessage" text="Enviar mensaje" />
-    <Button fx:id="btnEliminar" layoutX="134.0" layoutY="52.0" onAction="#onEliminar" text="Eliminar usuario" />
-    <Button fx:id="btnModificar" layoutX="14.0" layoutY="52.0" onAction="#onModificar" text="Modificar usuario" />
-    <Label layoutX="148.0" prefHeight="55.0" prefWidth="89.0" text="Chat">
+
+    <!-- Título -->
+    <Label layoutX="225.0" layoutY="10.0" text="Chat">
         <font>
             <Font size="38.0" />
         </font>
     </Label>
 
+    <!-- Lista de usuarios -->
+    <ListView fx:id="listUsuarios" layoutX="30.0" layoutY="80.0" prefHeight="280.0" prefWidth="385.0" />
 
+    <!-- Botones -->
+    <HBox layoutX="30.0" layoutY="370.0" spacing="10">
+        <Button fx:id="btnModificar" text="Modificar usuario" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5px;"  onAction="#onModificar"/>
+        <Button fx:id="btnEliminar" text="Eliminar usuario" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-background-radius: 5px;" onAction="#onEliminar" />
+        <Button fx:id="onSendMessage" text="Enviar mensaje" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5px;" onAction="#onSendMessage" />
+    </HBox>
 </AnchorPane>
+

@@ -28,11 +28,13 @@ public class ManejadorCliente implements Runnable {
 
     @Override
     public void run() {
+        boolean continuar = true; // Bandera para controlar el bucle
+
         try {
             out = new ObjectOutputStream(clienteSocket.getOutputStream());
             in = new ObjectInputStream(clienteSocket.getInputStream());
 
-            while (true) {
+            while (continuar) {
                 String comando = (String) in.readObject();
 
                 switch (comando) {
@@ -40,23 +42,28 @@ public class ManejadorCliente implements Runnable {
                         Usuario usuarioLogin = (Usuario) in.readObject();
                         out.writeObject(autenticarUsuario(usuarioLogin) ? "OK" : "ERROR: Credenciales incorrectas");
                         break;
+
                     case "REGISTER":
                         Usuario usuarioRegistro = (Usuario) in.readObject();
                         out.writeObject(registrarUsuario(usuarioRegistro) ? "OK" : "ERROR: El usuario ya existe");
                         break;
+
                     case "LISTA":
                         listaUsuario();
                         out.writeObject(usuarioList);
                         break;
+
                     case "ELIMINAR":
                         Usuario usuarioEliminar = (Usuario) in.readObject();
                         out.writeObject(eliminarUsuario(usuarioEliminar));
                         break;
+
                     case "MODIFICAR":
                         System.out.println("recibido");
                         Usuario usuarioModificar = (Usuario) in.readObject();
                         out.writeObject(modificarUsuario(usuarioModificar));
                         break;
+
                     case "BUSCAR":
                         String nombre = (String) in.readObject();  // Recibir el nombre del usuario a buscar
                         Usuario usuario = buscarUsuarioPorNombre(nombre);  // Llamar al método para buscar el usuario
@@ -64,8 +71,11 @@ public class ManejadorCliente implements Runnable {
                         // Enviar el usuario encontrado o null si no se encontró
                         out.writeObject(usuario);
                         break;
+
                     case "SALIR":
-                        return; // Finaliza el hilo
+                        continuar = false; // Finaliza el bucle y cierra la conexión
+                        break;
+
                     default:
                         out.writeObject("ERROR: Comando no reconocido");
                 }
@@ -76,12 +86,14 @@ public class ManejadorCliente implements Runnable {
             System.err.println("Error en la comunicación con el cliente: " + e.getMessage());
         } finally {
             try {
-                clienteSocket.close();
+                clienteSocket.close(); // Cerrar el socket al salir del bucle
+                System.out.println("Conexión cerrada con el cliente: " + clienteSocket.getInetAddress());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
     private Usuario buscarUsuarioPorNombre(String nombre) {
         try {
             // Consulta SQL para buscar el usuario por nombre
@@ -222,6 +234,8 @@ public class ManejadorCliente implements Runnable {
             String checkQuery = "SELECT * FROM Usuarios WHERE name = ?";
             PreparedStatement checkStmt = conexionDB.prepareStatement(checkQuery);
             checkStmt.setString(1, usuario.getNombre());
+
+
             ResultSet rs = checkStmt.executeQuery();
 
             if (rs.next()) {
