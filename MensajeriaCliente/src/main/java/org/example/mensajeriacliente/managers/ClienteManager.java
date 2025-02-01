@@ -2,6 +2,7 @@ package org.example.mensajeriacliente.managers;
 
 import org.example.mensajeriacliente.models.Mensaje;
 import org.example.mensajeriacliente.models.Usuario;
+import org.example.mensajeriacliente.util.UsuarioActual;
 
 import java.io.*;
 import java.net.Socket;
@@ -207,6 +208,7 @@ public class ClienteManager {
 
     // Método estático para listar los mensajes
     public static List<Mensaje> listarMensajes(int idUsuario) throws IOException, ClassNotFoundException {
+        System.out.println(UsuarioActual.getUsuarioA());
         out.writeObject("OBTENER_MENSAJES");
         out.writeInt(idUsuario);  // Enviar el id del usuario para listar los mensajes
         out.flush();

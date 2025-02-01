@@ -22,7 +22,6 @@ public class MensajeView {
     @FXML
     private Button btnEnviar;  // Botón para enviar el mensaje
 
-    private Usuario receiver;  // Usuario receptor
 
     @FXML
     private void initialize() {
@@ -36,7 +35,7 @@ public class MensajeView {
 
         if (!mensajeText.isEmpty()) {
             // Crear un nuevo objeto Mensaje
-            Mensaje mensaje = new Mensaje(UsuarioActual.getUsuarioA().getId(), receiver.getId(), mensajeText);
+            Mensaje mensaje = new Mensaje(UsuarioActual.getUsuarioA().getId(), UsuarioActual.getReceptor().getId(), mensajeText);
 
             // Intentar enviar el mensaje
             try {
@@ -63,7 +62,7 @@ public class MensajeView {
     private void cargarMensajes() {
         try {
             // Listar los mensajes enviados y recibidos
-            List<Mensaje> mensajes = ClienteManager.listarMensajes(UsuarioActual.getUsuarioA().getId());
+            List<Mensaje> mensajes = ClienteManager.listarMensajes(UsuarioActual.getReceptor().getId());
 
             // Mostrar los mensajes en la ListView
             for (Mensaje mensaje : mensajes) {
@@ -90,8 +89,5 @@ public class MensajeView {
         alert.showAndWait();
     }
 
-    // Setear el receptor del mensaje
-    public void setReceiver(Usuario receiver) {
-        this.receiver = receiver;
-    }
+
 }

@@ -13,6 +13,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.example.mensajeriacliente.managers.ClienteManager;
 import org.example.mensajeriacliente.models.Usuario;
+import org.example.mensajeriacliente.util.UsuarioActual;
 
 import java.io.IOException;
 import java.util.List;
@@ -111,17 +112,15 @@ public class InicioCon {
     @FXML
     public void onSendMessage() {
         Usuario usuarioSeleccionado = listUsuarios.getSelectionModel().getSelectedItem();
+        UsuarioActual.setReceptor(usuarioSeleccionado);
         if (usuarioSeleccionado != null) {
             try {
                 // Inicializar el FXMLLoader y cargar el archivo FXML
                 fxmlLoader = new FXMLLoader(getClass().getResource("/org/example/mensajeriacliente/mensajeView.fxml"));
                 Parent root = fxmlLoader.load();
 
-                // Obtener el controlador asociado al archivo FXML
-                MensajeView mensajeCon = fxmlLoader.getController();
 
                 // Pasar los datos del cliente seleccionado al controlador
-                mensajeCon.setReceiver(usuarioSeleccionado);
 
 
                 // Cambiar a la nueva vista (opcional, según tu flujo de trabajo)

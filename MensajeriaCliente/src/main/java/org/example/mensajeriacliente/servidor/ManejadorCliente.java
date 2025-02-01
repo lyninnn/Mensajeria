@@ -1,4 +1,5 @@
 package org.example.mensajeriacliente.servidor;
+import org.example.mensajeriacliente.models.Mensaje;
 import org.example.mensajeriacliente.util.UsuarioActual;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.example.mensajeriacliente.models.Usuario;
@@ -16,6 +17,7 @@ public class ManejadorCliente implements Runnable {
     private ObjectOutputStream out;
     private Connection conexionDB;
     private List<Usuario> usuarioList = new ArrayList<>();
+    private List<Mensaje> mensajeList = new ArrayList<>();
 
     public ManejadorCliente(Socket clienteSocket) {
         this.clienteSocket = clienteSocket;
@@ -41,7 +43,13 @@ public class ManejadorCliente implements Runnable {
                 switch (comando) {
                     case "LOGIN":
                         Usuario usuarioLogin = (Usuario) in.readObject();
-                        out.writeObject(autenticarUsuario(usuarioLogin) ? "OK" : "ERROR: Credenciales incorrectas");
+                        boolean autenticado = autenticarUsuario(usuarioLogin);
+                        out.writeObject(autenticado ? "OK" : "ERROR: Credenciales incorrectas");
+                        out.flush();
+
+                        if (autenticado) {
+                            UsuarioActual.setUsuarioA(buscarUsuarioPorNombre(usuarioLogin.getNombre()));
+                        }
                         break;
 
                     case "REGISTER":
@@ -87,12 +95,28 @@ public class ManejadorCliente implements Runnable {
                         break;
 
                     case "OBTENER_MENSAJES":
-                        System.out.println(UsuarioActual.getUsuarioA().getNombre());
-                        int idEmisor = UsuarioActual.getUsuarioA().getId(); // ID del emisor
-                        int idReceptor = (int) in.readObject(); // ID del receptor
+                        try {
+                            // Verificar que el usuario esté autenticado
+                            Usuario usuarioActual = UsuarioActual.getUsuarioA();
+                            if (usuarioActual == null) {
+                                out.writeObject("ERROR: No hay un usuario autenticado.");
+                                break;
+                            }
 
-                        List<String> mensajes = obtenerMensajes(idEmisor, idReceptor);
-                        out.writeObject(mensajes);
+                            // Recibir el ID del receptor
+                            int idReceptor = (int) in.readObject();
+
+                            // Obtener los mensajes entre el emisor y el receptor
+                            List<Mensaje> mensajes = obtenerMensajes(usuarioActual.getId(), idReceptor);
+                            System.out.println("Mensajes obtenidos: " + mensajes);
+
+                            // Enviar la lista de mensajes al cliente
+                            out.writeObject(mensajes);
+                        } catch (ClassNotFoundException e) {
+                            out.writeObject("ERROR: Tipo de dato inesperado.");
+                        } catch (IOException e) {
+                            System.err.println("Error al enviar/recibir datos: " + e.getMessage());
+                        }
                         break;
 
                     default:
@@ -294,29 +318,40 @@ public class ManejadorCliente implements Runnable {
         }
     }
 
-    private List<String> obtenerMensajes(int idTransmitter, int idReceiver) {
-        List<String> mensajes = new ArrayList<>();
+    private List<Mensaje> obtenerMensajes(int idTransmitter, int idReceiver) {
+        List<Mensaje> mensajes = new ArrayList<>();
         try {
             // Consulta los mensajes entre el emisor y el receptor
-            String query = "SELECT msgText, state, timeStamp FROM mensajes WHERE (idTransmitter = ? AND idReceiver = ?) OR (idTransmitter = ? AND idReceiver = ?) ORDER BY timeStamp";
+            String query = "SELECT idTransmitter, idReceiver, msgText, state, timeStamp FROM mensajes " +
+                    "WHERE (idTransmitter = ? AND idReceiver = ?) OR (idTransmitter = ? AND idReceiver = ?) " +
+                    "ORDER BY timeStamp";
             PreparedStatement stmt = conexionDB.prepareStatement(query);
+
+            // Establecer los parámetros de la consulta
             stmt.setInt(1, idTransmitter);
             stmt.setInt(2, idReceiver);
             stmt.setInt(3, idReceiver);
             stmt.setInt(4, idTransmitter);
+
+            // Ejecutar la consulta
             ResultSet rs = stmt.executeQuery();
 
-            // Procesar los mensajes y añadirlos a la lista
+            // Procesar los resultados y crear objetos Mensaje
             while (rs.next()) {
-                String mensaje = rs.getString("msgText") + " (" + rs.getString("state") + ")";
-                mensajes.add(mensaje);
+                Mensaje mensaje = new Mensaje();
+                mensaje.setIdTransmitter(rs.getInt("idTransmitter")); // Establecer el ID del emisor
+                mensaje.setIdReceiver(rs.getInt("idReceiver"));       // Establecer el ID del receptor
+                mensaje.setMsgText(rs.getString("msgText"));            // Establecer el texto del mensaje
+                mensaje.setState(Mensaje.EstadoMensaje.valueOf(rs.getString("state")));             // Establecer el estado del mensaje
+                mensaje.setTimeStamp(rs.getTimestamp("timeStamp").toLocalDateTime());       // Establecer la fecha del mensaje
+                mensajes.add(mensaje); // Añadir el mensaje a la lista
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return mensajes;
+        return mensajes; // Devolver la lista de mensajes
     }
 
     private boolean actualizarEstadoMensaje(int idMessage, String estado) {
