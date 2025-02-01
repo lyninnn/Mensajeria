@@ -27,29 +27,38 @@ public class InicioCon {
     private Button btnEliminar;
     @FXML
     private Button btnModificar;
+    @FXML
+    private Button btnMostrar;
 
-    private ClienteManager clienteManager=new ClienteManager();
+
     private ObservableList<Usuario> usuariosList = FXCollections.observableArrayList();
 
-    // Método para cargar todos los usuarios
-    public void initialize() {
+    @FXML
+    private void initialize() throws IOException, ClassNotFoundException {
         cargarUsuarios();
     }
 
-    private void cargarUsuarios() {
-        List<Usuario> usuarios = clienteManager.mostrarListaUsuario();  // Suponiendo que tienes un método en UsuarioDAO para obtener todos los usuarios
+
+
+    private void cargarUsuarios() throws IOException, ClassNotFoundException {
+        usuariosList.clear();
+        List<Usuario> usuarios = ClienteManager.mostrarListaUsuario();  // Suponiendo que tienes un método en UsuarioDAO para obtener todos los usuarios
+        System.out.println(usuarios.size());
         usuariosList.setAll(usuarios);
         listUsuarios.setItems(usuariosList);
     }
 
+
+
     // Método para eliminar un usuario
     @FXML
-    public void onEliminar() {
+    public void onEliminar() throws IOException, ClassNotFoundException {
         Usuario usuarioSeleccionado = listUsuarios.getSelectionModel().getSelectedItem();
         if (usuarioSeleccionado != null) {
-            boolean exito = clienteManager.eliminarUsuario(usuarioSeleccionado);
+            boolean exito = ClienteManager.eliminarUsuario(usuarioSeleccionado);
             if (exito) {
                 mostrarAlerta("Éxito", "Usuario eliminado correctamente.");
+
                 cargarUsuarios(); // Recargar la lista después de eliminar
             } else {
                 mostrarAlerta("Error", "Hubo un problema al eliminar al usuario.");
@@ -58,6 +67,7 @@ public class InicioCon {
             mostrarAlerta("Error", "Selecciona un usuario para eliminar.");
         }
     }
+
 
     // Método para modificar un usuario
     @FXML
@@ -75,6 +85,7 @@ public class InicioCon {
                 // Pasar los datos del cliente seleccionado al controlador
                 UsuarioCon.rellenar(usuarioSeleccionado);
 
+
                 // Cambiar a la nueva vista (opcional, según tu flujo de trabajo)
                 Stage stage = (Stage) listUsuarios.getScene().getWindow();
                 Scene scene = new Scene(root);
@@ -88,6 +99,11 @@ public class InicioCon {
             mostrarAlerta("Error", "Seleccione un cliente para actualizar.");
         }
     }
+    @FXML
+    public void onMostrarContacto() throws IOException, ClassNotFoundException {
+       cargarUsuarios();
+    }
+
 
 
 
@@ -96,18 +112,31 @@ public class InicioCon {
     public void onSendMessage() {
         Usuario usuarioSeleccionado = listUsuarios.getSelectionModel().getSelectedItem();
         if (usuarioSeleccionado != null) {
-            String mensaje = txtMessage.getText().trim();
-            if (!mensaje.isEmpty()) {
-                // Aquí puedes agregar la lógica para enviar el mensaje al usuario seleccionado
-                // Por ejemplo, almacenar en una base de datos de mensajes
-                mostrarAlerta("Mensaje enviado", "Mensaje enviado a " + usuarioSeleccionado.getNombre());
-                txtMessage.clear(); // Limpiar el campo de mensaje
-            } else {
-                mostrarAlerta("Error", "Escribe un mensaje antes de enviar.");
+            try {
+                // Inicializar el FXMLLoader y cargar el archivo FXML
+                fxmlLoader = new FXMLLoader(getClass().getResource("/org/example/mensajeriacliente/mensajeView.fxml"));
+                Parent root = fxmlLoader.load();
+
+                // Obtener el controlador asociado al archivo FXML
+                MensajeView mensajeCon = fxmlLoader.getController();
+
+                // Pasar los datos del cliente seleccionado al controlador
+                mensajeCon.setReceiver(usuarioSeleccionado);
+
+
+                // Cambiar a la nueva vista (opcional, según tu flujo de trabajo)
+                Stage stage = (Stage) listUsuarios.getScene().getWindow();
+                Scene scene = new Scene(root);
+                stage.setScene(scene);
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                mostrarAlerta("Error", "No se pudo cargar la vista para actualizar el cliente.");
             }
         } else {
-            mostrarAlerta("Error", "Selecciona un usuario para enviar el mensaje.");
+            mostrarAlerta("Error", "Seleccione un cliente para actualizar.");
         }
+
     }
 
     // Método para mostrar alertas

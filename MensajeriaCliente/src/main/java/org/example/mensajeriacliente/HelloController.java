@@ -10,7 +10,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import org.example.mensajeriacliente.controllers.InicioCon;
 import org.example.mensajeriacliente.managers.ClienteManager;
+import org.example.mensajeriacliente.models.Usuario;
+import org.example.mensajeriacliente.util.UsuarioActual;
 
 import java.io.IOException;
 
@@ -31,11 +34,7 @@ public class HelloController {
     @FXML
     private Label lblStatus; // Etiqueta para mostrar mensajes de estado
 
-    private ClienteManager clienteManager;
 
-    public HelloController() {
-        this.clienteManager = new ClienteManager(); // Instancia del gestor del cliente
-    }
 
     @FXML
     private void initialize() {
@@ -43,7 +42,7 @@ public class HelloController {
     }
 
     @FXML
-    private void iniciarSesion() {
+    private void iniciarSesion() throws IOException, ClassNotFoundException {
         String usuario = txtUsuario.getText();
         String password = txtPassword.getText();
 
@@ -53,24 +52,24 @@ public class HelloController {
         }
 
         // Aquí puedes integrar lógica de clienteManager para manejar el inicio de sesión
-        if (clienteManager != null) {
+
             // Simulación de un inicio de sesión exitoso
             System.out.println(usuario+" "+password);
-            boolean loginExitoso = clienteManager.login(usuario, password); // Asume que existe un método `login`
 
-            if (loginExitoso) {
+            if (ClienteManager.login(usuario, password)){
+                Usuario usuario1 = ClienteManager.encontrarUsuario(usuario);
+                UsuarioActual.setUsuarioA( usuario1);
                 redirigirAInicio();
-                clienteManager.iniciarCliente();
-            }
-        }
+            };
+
     }
     private void redirigirAInicio() {
         try {
-            // Cargar la vista de inicio
             FXMLLoader loader = new FXMLLoader(getClass().getResource("inicio.fxml"));
             Parent root = loader.load();
 
-            // Obtener la escena actual y cambiarla
+            // Obtener el controlador de InicioCon y pasar la instancia de ClienteManager
+            InicioCon inicioCon = loader.getController();
             Stage stage = (Stage) btnLogin.getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);

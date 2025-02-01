@@ -18,9 +18,7 @@ public class MensajeManager {
         Mensaje mensaje = new Mensaje(
                 idTransmitter,
                 idReceiver,
-                msgText,
-                EstadoMensaje.pending, // Estado inicial: pendiente
-                LocalDateTime.now()    // Fecha y hora actual
+                msgText
         );
         mensajes.add(mensaje); // Agregar el mensaje a la lista (simulación de guardar en la base de datos)
         System.out.println("Mensaje enviado: " + mensaje);

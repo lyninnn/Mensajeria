@@ -28,11 +28,13 @@ public class UsuarioView {
 
     @FXML
     private Button btnRegistrar; // Botón para registrar el usuario
-    private ClienteManager clienteManager= new ClienteManager();
+    private ClienteManager clienteManager;
+
+
 
     // Método para registrar al usuario
     @FXML
-    public void onRegistrar() {
+    public void onRegistrar() throws IOException, ClassNotFoundException {
         String nombreUsuario = txtUsuario.getText().trim();
         String password = txtPassword.getText().trim();
         String confirmPassword = txtConfirmPassword.getText().trim();

@@ -1,231 +1,239 @@
 package org.example.mensajeriacliente.managers;
 
+import org.example.mensajeriacliente.models.Mensaje;
 import org.example.mensajeriacliente.models.Usuario;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class ClienteManager {
-    private String host = "localhost"; // Dirección del servidor
-    private int puerto = 12345;        // Puerto del servidor
-    private Socket socket;
-    private ObjectOutputStream out;
-    private ObjectInputStream in;
-    private boolean conectado = false;
+    private static String host = "localhost"; // Dirección del servidor
+    private static int puerto = 12345;        // Puerto del servidor
+    private static Socket socket;
+    private static ObjectOutputStream out;
+    private static ObjectInputStream in;
+    private static boolean conectado = false;
 
-    public void iniciarCliente() {
+    // Método estático para iniciar el cliente
+    public static boolean login(String nombre, String contraseña) {
         try {
-            socket = new Socket(host, puerto);
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
-            conectado = true;
-            System.out.println("Conectado al servidor en " + host + ":" + puerto);
-
-            // Iniciar hilo para escuchar las respuestas del servidor sin bloquear el hilo principal
-            Thread listenerThread = new Thread(this::escucharRespuestas);
-            listenerThread.setDaemon(true); // Hacer que el hilo de escucha sea un hilo "demonio"
-            listenerThread.start();
-
-            // Aquí puedes manejar la entrada del usuario u otras acciones sin esperar que el listener termine
-            // Esto permite que la aplicación no se bloquee y el cliente siga interactuando
-            // enviarComandos(); // Si deseas mantener esta funcionalidad, descomenta este método.
-
-        } catch (IOException e) {
-            System.err.println("Error al conectar con el servidor: " + e.getMessage());
-        }
-    }
-
-    private void escucharRespuestas() {
-        try {
-            Object respuesta;
-            while (conectado && (respuesta = in.readObject()) != null) {
-                System.out.println("Servidor: " + respuesta);
+            // Iniciar conexión solo si no está conectada
+            if (!conectado) {
+                socket = new Socket(host, puerto);
+                out = new ObjectOutputStream(socket.getOutputStream());
+                in = new ObjectInputStream(socket.getInputStream());
+                conectado = true;
+                System.out.println("Conectado al servidor en " + host + ":" + puerto);
             }
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Se perdió la conexión con el servidor.");
-        } finally {
-            conectado = false; // Marca como desconectado si el hilo termina
-        }
-    }
 
-//    private void enviarComandos() {
-//        try (Scanner scanner = new Scanner(System.in)) {
-//            while (conectado) {
-//                System.out.print("Ingrese comando: ");
-//                String comando = scanner.nextLine();
-//                out.writeObject(comando);
-//                out.flush();
-//                if ("SALIR".equalsIgnoreCase(comando)) {
-//                    conectado = false;
-//                }
-//            }
-//        } catch (IOException e) {
-//            System.err.println("Error al enviar comandos: " + e.getMessage());
-//        }
-//    }
-
-
-
-
-    public boolean login(String nombre, String contraseña) {
-        try (Socket socket = new Socket(host, puerto);
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
-
-            // Crear objeto Usuario para enviar al servidor
-            Usuario usuario = new Usuario(nombre, contraseña,"");
-
-            // Enviar el objeto al servidor
+            // Enviar credenciales al servidor
+            Usuario usuario = new Usuario(nombre, contraseña, "");
             out.writeObject("LOGIN");
             out.writeObject(usuario);
+            out.flush();
 
-
-            // Esperar la respuesta del servidor
+            // Leer respuesta del servidor
             String respuesta = (String) in.readObject();
+            if ("OK".equals(respuesta)) {
+                System.out.println("Login exitoso.");
+                return true;
+            } else {
+                System.err.println("Login fallido.");
+                cerrarConexion(); // Cerrar conexión si el login falla
+                return false;
+            }
 
-            // Supongamos que el servidor responde con "OK" si el login fue exitoso
-            return "OK".equals(respuesta);
-
-        } catch (UnknownHostException e) {
-            System.err.println("No se pudo conectar al host: " + host);
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error de conexión: " + e.getMessage());
+            System.err.println("Error al intentar login: " + e.getMessage());
+            cerrarConexion(); // Asegurar que la conexión se cierre en caso de error
         }
-
-        return false; // Si no se pudo realizar el login, devolver false
+        return false;
     }
 
-    public boolean registra(Usuario usuario) {
-        try (Socket socket = new Socket(host, puerto);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); // Cambiado orden
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-             BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))) {
-
-
-            System.out.println(usuario);
-            // Enviar los datos para el registro al servidor
-            out.writeObject("REGISTER");
-            out.writeObject(usuario);
-
-            // Esperar la respuesta del servidor
-            String respuesta = (String) in.readObject();
-
-
-            // Supongamos que el servidor responde con "OK" si el registro fue exitoso
-            return "OK".equals(respuesta);
-
-        } catch (UnknownHostException e) {
-            System.err.println("No se pudo conectar al host: " + host);
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error de conexión: " + e.getMessage());
+    public static void cerrarConexion() {
+        try {
+            if (out != null) out.close();
+            if (in != null) in.close();
+            if (socket != null) socket.close();
+            conectado = false;
+            System.out.println("Conexión cerrada.");
+        } catch (IOException e) {
+            System.err.println("Error al cerrar la conexión: " + e.getMessage());
         }
-
-        return false; // Si no se pudo realizar el registro, devolver false
     }
-    public List<Usuario> mostrarListaUsuario() {
-        List<Usuario> listaUsuarios = new ArrayList<>();
 
+    // Método para enviar un comando al servidor
+    private static synchronized Object enviarComando(String comando, Object data) {
+        try {
+            if (!conectado) {
+                System.err.println("Error: No hay conexión establecida.");
+                return null;
+            }
+
+            out.writeObject(comando);
+            if (data != null) {
+                out.writeObject(data);
+            }
+            out.flush();
+
+            return in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error al enviar comando " + comando + ": " + e.getMessage());
+            cerrarConexion(); // Cerrar conexión si hay error
+        }
+        return null;
+    }
+
+    // Método estático para registrar usuario
+    public static boolean registra(Usuario usuario) throws IOException, ClassNotFoundException {
+        boolean registrado = false;
         try (Socket socket = new Socket(host, puerto);
              ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
              ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-            // Enviar el comando LISTA al servidor
-            out.writeObject("LISTA");
+            System.out.println("Conectado al servidor en " + host + ":" + puerto);
+            System.out.println("Registrando usuario: " + usuario);
 
-            // Leer la respuesta del servidor
-            Object respuesta = in.readObject();
+            // Enviar los datos para el registro al servidor
+            out.writeObject("REGISTER");
+            out.writeObject(usuario);
+            out.flush(); // 🔥 Enviar datos inmediatamente
 
-            // Verificar si la respuesta es del tipo esperado
-            if (respuesta instanceof List) {
-                listaUsuarios = (List<Usuario>) respuesta;
-                System.out.println("Lista de usuarios recibida:");
-                for (Usuario usuario : listaUsuarios) {
-                    System.out.println("Usuario: " + usuario.getNombre());
-                }
-            } else {
-                System.err.println("El servidor no devolvió una lista.");
-            }
+            // Esperar la respuesta del servidor
+            String respuesta = (String) in.readObject();
+            registrado = "OK".equals(respuesta);
 
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error al recibir la lista de usuarios: " + e.getMessage());
+            System.err.println("Error en el registro: " + e.getMessage());
+        }
+
+        System.out.println("Conexión cerrada después del registro.");
+        return registrado;
+    }
+
+    public static List<Usuario> mostrarListaUsuario() throws IOException, ClassNotFoundException {
+        System.out.println("Conectado al servidor en " + host + ":" + puerto);
+        List<Usuario> listaUsuarios = new ArrayList<>();
+        listaUsuarios.clear();
+        // Enviar el comando LISTA al servidor
+        out.writeObject("LISTA");
+        out.flush();  // Asegurarse de que los datos se envíen inmediatamente
+
+        // Leer la respuesta del servidor
+        Object respuesta = in.readObject();
+        System.out.println("Respuesta recibida: " + respuesta);
+
+        // Verificar si la respuesta es del tipo esperado
+        if (respuesta instanceof List) {
+            listaUsuarios = (List<Usuario>) respuesta;
+            System.out.println("Número de usuarios recibidos: " + listaUsuarios.size());
+
+            // Depuración: Imprimir los usuarios recibidos
+            for (Usuario usuario : listaUsuarios) {
+                System.out.println("Usuario: " + usuario.getNombre());
+            }
+        } else {
+            System.err.println("El servidor no devolvió una lista.");
         }
 
         return listaUsuarios;
     }
 
-    // Eliminar usuario
-    public boolean eliminarUsuario(Usuario usuario) {
-        try (Socket socket = new Socket(host, puerto);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-            // Enviar solicitud para eliminar usuario
-            out.writeObject("ELIMINAR");
-            out.writeObject(usuario);
+    // Método estático para eliminar usuario
+    public static boolean eliminarUsuario(Usuario usuario) throws IOException, ClassNotFoundException {
 
-            // Leer respuesta del servidor
-            Object respuesta = in.readObject();
-            if (respuesta instanceof Boolean) {
-                return (Boolean) respuesta;
-            } else {
-                System.err.println("Respuesta inesperada al eliminar usuario.");
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error al eliminar usuario: " + e.getMessage());
+        // Enviar solicitud para eliminar usuario
+        out.writeObject("ELIMINAR");
+        out.writeObject(usuario);
+
+        // Leer respuesta del servidor
+        Object respuesta = in.readObject();
+        if (respuesta instanceof Boolean) {
+            return (Boolean) respuesta;
+        } else {
+            System.err.println("Respuesta inesperada al eliminar usuario.");
         }
 
         return false;
     }
 
-    // Modificar usuario
-    public boolean modificarUsuario(Usuario usuario) {
-        try (Socket socket = new Socket(host, puerto);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+    // Método estático para modificar usuario
+    public static boolean modificarUsuario(Usuario usuario) throws IOException, ClassNotFoundException {
 
-            // Enviar solicitud para modificar usuario
-            out.writeObject("MODIFICAR");
-            out.writeObject(usuario); // Enviar el objeto usuario con los cambios
+        // Enviar solicitud para modificar usuario
+        out.writeObject("MODIFICAR");
+        out.writeObject(usuario); // Enviar el objeto usuario con los cambios
 
-            // Leer respuesta del servidor
-            Object respuesta = in.readObject();
-            if (respuesta instanceof Boolean) {
-                return (Boolean) respuesta;
-            } else {
-                System.err.println("Respuesta inesperada al modificar usuario.");
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error al modificar usuario: " + e.getMessage());
+        // Leer respuesta del servidor
+        Object respuesta = in.readObject();
+        if (respuesta instanceof Boolean) {
+            return (Boolean) respuesta;
+        } else {
+            System.err.println("Respuesta inesperada al modificar usuario.");
         }
 
         return false;
     }
-    public Usuario encontrarUsuario(String nombre) {
-        try (Socket socket = new Socket(host, puerto);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-            // Enviar solicitud para buscar usuario
-            out.writeObject("BUSCAR"); // Corregido de "BUSACR" a "BUSCAR"
-            out.writeObject(nombre); // Enviar el nombre del usuario a buscar
+    // Método estático para encontrar usuario
+    public static Usuario encontrarUsuario(String nombre) throws IOException, ClassNotFoundException {
 
-            // Leer respuesta del servidor
-            Object respuesta = in.readObject();
-            if (respuesta instanceof Usuario) {
-                return (Usuario) respuesta; // Retorna el usuario encontrado
-            } else {
-                System.err.println("Respuesta inesperada al buscar usuario.");
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error al buscar usuario: " + e.getMessage());
+        // Enviar solicitud para buscar usuario
+        out.writeObject("BUSCAR"); // Corregido de "BUSACR" a "BUSCAR"
+        out.writeObject(nombre); // Enviar el nombre del usuario a buscar
+
+        // Leer respuesta del servidor
+        Object respuesta = in.readObject();
+        if (respuesta instanceof Usuario) {
+            return (Usuario) respuesta; // Retorna el usuario encontrado
+        } else {
+            System.err.println("Respuesta inesperada al buscar usuario.");
         }
 
         return null; // Retorna null si no se encuentra o ocurre un error
     }
+    public static boolean enviarMensaje(Mensaje mensaje) throws IOException, ClassNotFoundException {
+        out.writeObject("ENVIAR_MENSAJE");
+        out.writeObject(mensaje); // Enviar el mensaje al servidor
+        out.flush();
+
+        // Leer la respuesta del servidor
+        String respuesta = (String) in.readObject();
+        return "OK".equals(respuesta);  // Si la respuesta es "OK", el mensaje fue enviado correctamente
+    }
+
+    // Método estático para listar los mensajes
+    public static List<Mensaje> listarMensajes(int idUsuario) throws IOException, ClassNotFoundException {
+        out.writeObject("OBTENER_MENSAJES");
+        out.writeInt(idUsuario);  // Enviar el id del usuario para listar los mensajes
+        out.flush();
+
+        // Leer la respuesta del servidor
+        Object respuesta = in.readObject();
+        if (respuesta instanceof List) {
+            return (List<Mensaje>) respuesta;  // Retornar la lista de mensajes recibidos
+        } else {
+            System.err.println("Respuesta inesperada al listar mensajes.");
+        }
+
+        return new ArrayList<>();  // Retornar lista vacía si hubo error
+    }
+
+    // Método estático para actualizar el estado de un mensaje
+    public static boolean actualizarEstadoMensaje(int idMensaje, String estado) throws IOException, ClassNotFoundException {
+        out.writeObject("ACTUALIZAR_ESTADO");
+        out.writeInt(idMensaje);  // Enviar el id del mensaje
+        out.writeObject(estado);  // Enviar el nuevo estado ("pending" o "delivered")
+        out.flush();
+
+        // Leer respuesta del servidor
+        String respuesta = (String) in.readObject();
+        return "OK".equals(respuesta);  // Si la respuesta es "OK", el estado fue actualizado correctamente
+    }
+
 
 
 

@@ -1,6 +1,7 @@
 package org.example.mensajeriacliente.models;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Mensaje implements Serializable {
@@ -24,12 +25,12 @@ public class Mensaje implements Serializable {
 
 
     // Constructor con parámetros
-    public Mensaje(int idTransmitter, int idReceiver, String msgText, EstadoMensaje state, LocalDateTime timeStamp) {
+    public Mensaje(int idTransmitter, int idReceiver, String msgText) {
         this.idTransmitter = idTransmitter;
         this.idReceiver = idReceiver;
         this.msgText = msgText;
-        this.state = state;
-        this.timeStamp = timeStamp;
+        this.state =EstadoMensaje.pending;
+        this.timeStamp = LocalDateTime.now();
     }
 
     public Mensaje(int idMessage, int idTransmitter, int idReceiver, String msgText, EstadoMensaje state, LocalDateTime timeStamp) {

@@ -1,4 +1,5 @@
 package org.example.mensajeriacliente.servidor;
+import org.example.mensajeriacliente.util.UsuarioActual;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.example.mensajeriacliente.models.Usuario;
 
@@ -34,8 +35,8 @@ public class ManejadorCliente implements Runnable {
             out = new ObjectOutputStream(clienteSocket.getOutputStream());
             in = new ObjectInputStream(clienteSocket.getInputStream());
 
-                String comando = (String) in.readObject();
             while (continuar) {
+                String comando = (String) in.readObject();
 
                 switch (comando) {
                     case "LOGIN":
@@ -51,6 +52,7 @@ public class ManejadorCliente implements Runnable {
                     case "LISTA":
                         listaUsuario();
                         out.writeObject(usuarioList);
+                        System.out.println("Número de usuarios en el servidor: " + usuarioList.size());
                         break;
 
                     case "ELIMINAR":
@@ -74,6 +76,23 @@ public class ManejadorCliente implements Runnable {
 
                     case "SALIR":
                         continuar = false; // Finaliza el bucle y cierra la conexión
+                        break;
+                    case "ENVIAR_MENSAJE":
+                        int idTransmitter = (int) in.readObject(); // ID del emisor
+                        int idReceiver = (int) in.readObject(); // ID del receptor
+                        String msgText = (String) in.readObject(); // Texto del mensaje
+
+                        boolean mensajeEnviado = enviarMensaje(idTransmitter, idReceiver, msgText);
+                        out.writeObject(mensajeEnviado ? "Mensaje enviado" : "Error al enviar el mensaje");
+                        break;
+
+                    case "OBTENER_MENSAJES":
+                        System.out.println(UsuarioActual.getUsuarioA().getNombre());
+                        int idEmisor = UsuarioActual.getUsuarioA().getId(); // ID del emisor
+                        int idReceptor = (int) in.readObject(); // ID del receptor
+
+                        List<String> mensajes = obtenerMensajes(idEmisor, idReceptor);
+                        out.writeObject(mensajes);
                         break;
 
                     default:
@@ -255,6 +274,65 @@ public class ManejadorCliente implements Runnable {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private boolean enviarMensaje(int idTransmitter, int idReceiver, String msgText) {
+        try {
+            // Inserta el mensaje en la base de datos con estado 'pending'
+            String query = "INSERT INTO mensajes (idTransmitter, idReceiver, msgText, state, timeStamp) VALUES (?, ?, ?, 'pending', ?)";
+            PreparedStatement stmt = conexionDB.prepareStatement(query);
+            stmt.setInt(1, idTransmitter);
+            stmt.setInt(2, idReceiver);
+            stmt.setString(3, msgText);
+            stmt.setTimestamp(4, Timestamp.valueOf(LocalDate.now().atStartOfDay()));
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private List<String> obtenerMensajes(int idTransmitter, int idReceiver) {
+        List<String> mensajes = new ArrayList<>();
+        try {
+            // Consulta los mensajes entre el emisor y el receptor
+            String query = "SELECT msgText, state, timeStamp FROM mensajes WHERE (idTransmitter = ? AND idReceiver = ?) OR (idTransmitter = ? AND idReceiver = ?) ORDER BY timeStamp";
+            PreparedStatement stmt = conexionDB.prepareStatement(query);
+            stmt.setInt(1, idTransmitter);
+            stmt.setInt(2, idReceiver);
+            stmt.setInt(3, idReceiver);
+            stmt.setInt(4, idTransmitter);
+            ResultSet rs = stmt.executeQuery();
+
+            // Procesar los mensajes y añadirlos a la lista
+            while (rs.next()) {
+                String mensaje = rs.getString("msgText") + " (" + rs.getString("state") + ")";
+                mensajes.add(mensaje);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return mensajes;
+    }
+
+    private boolean actualizarEstadoMensaje(int idMessage, String estado) {
+        try {
+            // Actualiza el estado del mensaje (por ejemplo, de 'pending' a 'delivered')
+            String query = "UPDATE mensajes SET state = ? WHERE idMessage = ?";
+            PreparedStatement stmt = conexionDB.prepareStatement(query);
+            stmt.setString(1, estado);
+            stmt.setInt(2, idMessage);
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 
