@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.*;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,13 +87,29 @@ public class ManejadorCliente implements Runnable {
                         continuar = false; // Finaliza el bucle y cierra la conexión
                         break;
                     case "ENVIAR_MENSAJE":
-                        int idTransmitter = (int) in.readObject(); // ID del emisor
-                        int idReceiver = (int) in.readObject(); // ID del receptor
-                        String msgText = (String) in.readObject(); // Texto del mensaje
+                        Mensaje mensaje = (Mensaje) in.readObject();
 
-                        boolean mensajeEnviado = enviarMensaje(idTransmitter, idReceiver, msgText);
+                        boolean mensajeEnviado = enviarMensaje(mensaje.getIdTransmitter(), mensaje.getIdReceiver(),mensaje.getMsgText());
                         out.writeObject(mensajeEnviado ? "Mensaje enviado" : "Error al enviar el mensaje");
                         break;
+                    case "MARCAR_ENTREGADO":
+                        try {
+                            int idMensaje = in.readInt();  // Recibir ID del mensaje
+
+                            String query = "UPDATE mensajes SET state = 'delivered' WHERE idMessage = ?";
+
+                            PreparedStatement stmt = conexionDB.prepareStatement(query);
+                            stmt.setInt(1, idMensaje);
+//                            stmt.setInt(2, idRecep);
+                            int filasActualizadas = stmt.executeUpdate();
+
+                            // Responder al cliente
+                            out.writeObject(filasActualizadas > 0 ? "OK" : "ERROR");
+                        } catch (SQLException e) {
+                            out.writeObject("ERROR: " + e.getMessage());
+                        }
+                        break;
+
 
                     case "OBTENER_MENSAJES":
                         try {
@@ -105,7 +122,7 @@ public class ManejadorCliente implements Runnable {
 
                             // Recibir el ID del receptor
                             int idReceptor = (int) in.readObject();
-
+                            System.out.println(idReceptor);
                             // Obtener los mensajes entre el emisor y el receptor
                             List<Mensaje> mensajes = obtenerMensajes(usuarioActual.getId(), idReceptor);
                             System.out.println("Mensajes obtenidos: " + mensajes);
@@ -308,7 +325,7 @@ public class ManejadorCliente implements Runnable {
             stmt.setInt(1, idTransmitter);
             stmt.setInt(2, idReceiver);
             stmt.setString(3, msgText);
-            stmt.setTimestamp(4, Timestamp.valueOf(LocalDate.now().atStartOfDay()));
+            stmt.setTimestamp(4, Timestamp.valueOf( LocalDateTime.now()));
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -322,12 +339,13 @@ public class ManejadorCliente implements Runnable {
         List<Mensaje> mensajes = new ArrayList<>();
         try {
             // Consulta los mensajes entre el emisor y el receptor
-            String query = "SELECT idTransmitter, idReceiver, msgText, state, timeStamp FROM mensajes " +
+            String query = "SELECT idMessage,idTransmitter, idReceiver, msgText, state, timeStamp FROM mensajes " +
                     "WHERE (idTransmitter = ? AND idReceiver = ?) OR (idTransmitter = ? AND idReceiver = ?) " +
                     "ORDER BY timeStamp";
             PreparedStatement stmt = conexionDB.prepareStatement(query);
 
             // Establecer los parámetros de la consulta
+
             stmt.setInt(1, idTransmitter);
             stmt.setInt(2, idReceiver);
             stmt.setInt(3, idReceiver);
@@ -339,6 +357,7 @@ public class ManejadorCliente implements Runnable {
             // Procesar los resultados y crear objetos Mensaje
             while (rs.next()) {
                 Mensaje mensaje = new Mensaje();
+                mensaje.setIdMessage(rs.getInt("idMessage"));
                 mensaje.setIdTransmitter(rs.getInt("idTransmitter")); // Establecer el ID del emisor
                 mensaje.setIdReceiver(rs.getInt("idReceiver"));       // Establecer el ID del receptor
                 mensaje.setMsgText(rs.getString("msgText"));            // Establecer el texto del mensaje

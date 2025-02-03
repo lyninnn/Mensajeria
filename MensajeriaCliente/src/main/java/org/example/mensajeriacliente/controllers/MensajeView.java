@@ -1,30 +1,32 @@
 package org.example.mensajeriacliente.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import org.example.mensajeriacliente.managers.ClienteManager;
 import org.example.mensajeriacliente.models.Mensaje;
 import org.example.mensajeriacliente.models.Usuario;
 import org.example.mensajeriacliente.util.UsuarioActual;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class MensajeView {
 
     @FXML
-    private ListView<String> listViewMensajes;  // ListView para mostrar los mensajes
+    private ListView<String> listViewMensajes;   // ListView para mostrar los mensajes
     @FXML
     private TextField txtMensaje;  // Campo de texto para escribir el mensaje
     @FXML
     private Button btnEnviar;  // Botón para enviar el mensaje
 
+    @FXML
+    private Label labelUser;
+
 
     @FXML
     private void initialize() {
+        labelUser.setText(UsuarioActual.getReceptor().getNombre());
         cargarMensajes();  // Cargar los mensajes al iniciar la vista
     }
 
@@ -41,8 +43,7 @@ public class MensajeView {
             try {
                 boolean enviado = ClienteManager.enviarMensaje(mensaje);  // Enviar mensaje utilizando ClienteManager
                 if (enviado) {
-                    // Agregar el mensaje enviado a la ListView
-                    listViewMensajes.getItems().add(UsuarioActual.getUsuarioA().getNombre() + ": " + mensajeText);
+                    cargarMensajes();
                     txtMensaje.clear();  // Limpiar el campo de texto
                 } else {
                     mostrarAlerta("Error", "No se pudo enviar el mensaje.");
@@ -60,18 +61,39 @@ public class MensajeView {
 
     // Método para cargar los mensajes del usuario actual con el receptor
     private void cargarMensajes() {
+
         try {
+            listViewMensajes.getItems().clear();
+            System.out.println(UsuarioActual.getReceptor().getId());
             // Listar los mensajes enviados y recibidos
             List<Mensaje> mensajes = ClienteManager.listarMensajes(UsuarioActual.getReceptor().getId());
 
             // Mostrar los mensajes en la ListView
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Formato de fecha y hora
+
             for (Mensaje mensaje : mensajes) {
+                    if (mensaje.getIdReceiver() == UsuarioActual.getUsuarioA().getId()) {
+                        ClienteManager.marcarMensajeEntregado(mensaje.getIdMessage());
+                    }
                 // Si el mensaje es del usuario actual o del receptor, mostrarlo en la lista
                 if (mensaje.getIdTransmitter() == UsuarioActual.getUsuarioA().getId() ||
                         mensaje.getIdReceiver() == UsuarioActual.getUsuarioA().getId()) {
-                    listViewMensajes.getItems().add(mensaje.getIdTransmitter() == UsuarioActual.getUsuarioA().getId()
+
+                    // Formatear la fecha y hora
+                    String fechaHora = mensaje.getTimeStamp().format(formatter);
+
+                    // Construir el mensaje con la fecha
+                    String mensajeTexto = (mensaje.getIdTransmitter() == UsuarioActual.getUsuarioA().getId()
                             ? UsuarioActual.getUsuarioA().getNombre() + ": " + mensaje.getMsgText()
-                            : "Receptor: " + mensaje.getMsgText());
+                            : UsuarioActual.getReceptor().getNombre() + ": " + mensaje.getMsgText())
+                            + " [" + fechaHora + "]"+" ["+mensaje.getState()+"]";
+
+                    // Agregar mensaje a la lista
+                    listViewMensajes.getItems().add(mensajeTexto);
+                    System.out.println(mensaje.getIdReceiver());
+                    System.out.println(UsuarioActual.getUsuarioA().getId());
+
+
                 }
             }
 
@@ -80,6 +102,8 @@ public class MensajeView {
             e.printStackTrace();
         }
     }
+
+
 
     // Método para mostrar alertas en pantalla
     private void mostrarAlerta(String titulo, String mensaje) {

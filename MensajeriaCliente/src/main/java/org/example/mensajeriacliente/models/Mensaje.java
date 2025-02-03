@@ -26,6 +26,7 @@ public class Mensaje implements Serializable {
 
     // Constructor con parámetros
     public Mensaje(int idTransmitter, int idReceiver, String msgText) {
+
         this.idTransmitter = idTransmitter;
         this.idReceiver = idReceiver;
         this.msgText = msgText;

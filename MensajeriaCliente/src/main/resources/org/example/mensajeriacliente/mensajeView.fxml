@@ -13,20 +13,22 @@
         <Pane prefHeight="400.0" prefWidth="600.0">
             <children>
                 <!-- Título -->
-                <Label layoutX="33.0" layoutY="5.0" prefHeight="51.0" prefWidth="400.0" text="nombre de usuario">
+                <Label fx:id="labelUser" layoutX="33.0" layoutY="5.0" prefHeight="51.0" prefWidth="400.0" >
                     <font>
                         <Font size="30.0" />
                     </font>
                 </Label>
 
                 <!-- Área de mensajes -->
-                <ListView layoutX="35.0" layoutY="60.0" prefHeight="230.0" prefWidth="530.0" />
+                <ListView fx:id="listViewMensajes" layoutX="35.0" layoutY="60.0" prefHeight="230.0" prefWidth="530.0" />
 
                 <!-- Campo de entrada -->
-                <TextField layoutX="35.0" layoutY="310.0" prefHeight="50.0" prefWidth="450.0" promptText="Escribe tu mensaje aquí..." />
+                <TextField fx:id="txtMensaje" layoutX="35.0" layoutY="310.0" prefHeight="50.0" prefWidth="450.0" promptText="Escribe tu mensaje aquí..." />
 
                 <!-- Botón enviar -->
-                <Button layoutX="495.0" layoutY="310.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="70.0" style="-fx-background-color: #0078D7; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5px;" text="ENVIAR" />
+                <Button fx:id="btnEnviar" layoutX="495.0" layoutY="310.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="70.0"
+                        style="-fx-background-color: #0078D7; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5px;"
+                        text="ENVIAR" onAction="#onEnviarMensaje" />
             </children>
         </Pane>
     </children>

@@ -141,6 +141,40 @@ public class ClienteManager {
 
         return listaUsuarios;
     }
+    // Método estático para listar los mensajes
+    public static List<Mensaje> listarMensajes(int idUsuario) throws IOException, ClassNotFoundException {
+
+        System.out.println(UsuarioActual.getUsuarioA());
+        out.writeObject("OBTENER_MENSAJES");
+        out.flush();
+
+        out.writeObject(idUsuario);  // Enviar el id del usuario para listar los mensajes
+        out.flush();
+
+        // Leer la respuesta del servidor
+        Object respuesta = in.readObject();
+        if (respuesta instanceof List) {
+            return (List<Mensaje>) respuesta;  // Retornar la lista de mensajes recibidos
+        } else {
+            System.err.println("Respuesta inesperada al listar mensajes.");
+        }
+
+        return new ArrayList<>();  // Retornar lista vacía si hubo error
+    }
+
+    public static void marcarMensajeEntregado(int mensajeID) throws IOException, ClassNotFoundException {
+        out.writeObject("MARCAR_ENTREGADO");
+        out.writeInt(mensajeID);
+//        out.writeInt(recep);
+        out.flush();
+
+        // Leer respuesta del servidor
+        Object respuesta = in.readObject();
+        if (!(respuesta instanceof String) || !respuesta.equals("OK")) {
+            System.err.println("Error al marcar el mensaje como entregado.");
+        }
+    }
+
 
 
     // Método estático para eliminar usuario
@@ -203,26 +237,10 @@ public class ClienteManager {
 
         // Leer la respuesta del servidor
         String respuesta = (String) in.readObject();
-        return "OK".equals(respuesta);  // Si la respuesta es "OK", el mensaje fue enviado correctamente
+        return "Mensaje enviado".equals(respuesta);  // Si la respuesta es "OK", el mensaje fue enviado correctamente
     }
 
-    // Método estático para listar los mensajes
-    public static List<Mensaje> listarMensajes(int idUsuario) throws IOException, ClassNotFoundException {
-        System.out.println(UsuarioActual.getUsuarioA());
-        out.writeObject("OBTENER_MENSAJES");
-        out.writeInt(idUsuario);  // Enviar el id del usuario para listar los mensajes
-        out.flush();
 
-        // Leer la respuesta del servidor
-        Object respuesta = in.readObject();
-        if (respuesta instanceof List) {
-            return (List<Mensaje>) respuesta;  // Retornar la lista de mensajes recibidos
-        } else {
-            System.err.println("Respuesta inesperada al listar mensajes.");
-        }
-
-        return new ArrayList<>();  // Retornar lista vacía si hubo error
-    }
 
     // Método estático para actualizar el estado de un mensaje
     public static boolean actualizarEstadoMensaje(int idMensaje, String estado) throws IOException, ClassNotFoundException {
