@@ -13,7 +13,7 @@
         <Pane prefHeight="400.0" prefWidth="600.0">
             <children>
                 <!-- Título -->
-                <Label fx:id="labelUser" layoutX="33.0" layoutY="5.0" prefHeight="51.0" prefWidth="400.0" >
+                <Label fx:id="labelUser" layoutX="33.0" layoutY="5.0" prefHeight="51.0" prefWidth="400.0">
                     <font>
                         <Font size="30.0" />
                     </font>
@@ -26,9 +26,9 @@
                 <TextField fx:id="txtMensaje" layoutX="35.0" layoutY="310.0" prefHeight="50.0" prefWidth="450.0" promptText="Escribe tu mensaje aquí..." />
 
                 <!-- Botón enviar -->
-                <Button fx:id="btnEnviar" layoutX="495.0" layoutY="310.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="70.0"
-                        style="-fx-background-color: #0078D7; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5px;"
-                        text="ENVIAR" onAction="#onEnviarMensaje" />
+                <Button fx:id="btnEnviar" layoutX="495.0" layoutY="310.0" mnemonicParsing="false" onAction="#onEnviarMensaje" prefHeight="50.0" prefWidth="70.0" style="-fx-background-color: #0078D7; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5px;" text="ENVIAR" />
+
+                <Button fx:id="btnVolver" layoutX="492.0" layoutY="16.0" mnemonicParsing="false" onAction="#volverMain" prefHeight="30.0" prefWidth="76.0" style="-fx-background-color: #0078D7; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5px;" text="Volver" />
             </children>
         </Pane>
     </children>

@@ -1,7 +1,11 @@
 package org.example.mensajeriacliente.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 import org.example.mensajeriacliente.managers.ClienteManager;
 import org.example.mensajeriacliente.models.Mensaje;
 import org.example.mensajeriacliente.models.Usuario;
@@ -21,6 +25,8 @@ public class MensajeView {
     private Button btnEnviar;  // Botón para enviar el mensaje
 
     @FXML
+    private Button btnVolver;
+    @FXML
     private Label labelUser;
 
 
@@ -29,6 +35,7 @@ public class MensajeView {
         labelUser.setText(UsuarioActual.getReceptor().getNombre());
         cargarMensajes();  // Cargar los mensajes al iniciar la vista
     }
+
 
     // Método que maneja el clic en el botón de enviar
     @FXML
@@ -111,6 +118,26 @@ public class MensajeView {
         alert.setTitle(titulo);
         alert.setContentText(mensaje);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void volverMain(){
+        try {
+            // Cargar el archivo FXML de la nueva vista
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/example/mensajeriacliente/inicio.fxml"));
+            Parent root = fxmlLoader.load();
+
+            // Obtener la ventana actual
+            Stage stage = (Stage) btnVolver.getScene().getWindow(); // btnEnviar es un botón en la interfaz
+
+            // Configurar la nueva escena
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la vista para actualizar el cliente.");
+        }
     }
 
 
