@@ -6,30 +6,20 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
-<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.mensajeriacliente.controllers.MensajeView">
-    <children>
-        <Pane prefHeight="400.0" prefWidth="600.0">
-            <children>
-                <!-- Título -->
-                <Label fx:id="labelUser" layoutX="33.0" layoutY="5.0" prefHeight="51.0" prefWidth="400.0">
-                    <font>
-                        <Font size="30.0" />
-                    </font>
-                </Label>
+<AnchorPane fx:id="anchorPane" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #F5F5F7;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.mensajeriacliente.controllers.MensajeController">
+    <Pane prefHeight="400.0" prefWidth="600.0">
+        <!-- Título -->
+        <Label fx:id="labelUser" layoutX="35.0" layoutY="9.0" prefHeight="51.0" prefWidth="365.0" style="-fx-font-size: 26px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #333; -fx-font-weight: bold; -fx-text-transform: uppercase;" />
 
-                <!-- Área de mensajes -->
-                <ListView fx:id="listViewMensajes" layoutX="35.0" layoutY="60.0" prefHeight="230.0" prefWidth="530.0" />
+        <!-- Área de mensajes -->
+        <ListView fx:id="listViewMensajes" layoutX="35.0" layoutY="78.0" prefHeight="230.0" prefWidth="530.0" style="-fx-background-color: white; -fx-background-radius: 10px; -fx-border-color: #D1D1D6; -fx-border-radius: 10px; -fx-padding: 5px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 8, 0, 0, 2);" />
 
-                <!-- Campo de entrada -->
-                <TextField fx:id="txtMensaje" layoutX="35.0" layoutY="310.0" prefHeight="50.0" prefWidth="450.0" promptText="Escribe tu mensaje aquí..." />
+        <!-- Campo de entrada -->
+        <TextField fx:id="txtMensaje" layoutX="35.0" layoutY="326.0" prefHeight="50.0" prefWidth="450.0" promptText="Escribe tu mensaje aquí..." style="-fx-background-color: white; -fx-background-radius: 10px; -fx-border-color: #D1D1D6; -fx-border-radius: 10px; -fx-font-size: 14px; -fx-padding: 10px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0, 0, 1);" />
 
-                <!-- Botón enviar -->
-                <Button fx:id="btnEnviar" layoutX="495.0" layoutY="310.0" mnemonicParsing="false" onAction="#onEnviarMensaje" prefHeight="50.0" prefWidth="70.0" style="-fx-background-color: #0078D7; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5px;" text="ENVIAR" />
-
-                <Button fx:id="btnVolver" layoutX="492.0" layoutY="16.0" mnemonicParsing="false" onAction="#volverMain" prefHeight="30.0" prefWidth="76.0" style="-fx-background-color: #0078D7; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5px;" text="Volver" />
-            </children>
-        </Pane>
-    </children>
+        <!-- Botón enviar -->
+        <Button fx:id="btnEnviar" layoutX="495.0" layoutY="326.0" mnemonicParsing="false" onAction="#onEnviarMensaje" onMouseEntered="#onMouseIn" onMouseExited="#onMouseOut" prefHeight="50.0" prefWidth="70.0" style="-fx-background-color: linear-gradient(to bottom, #007AFF, #005EC4); -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 2);" text="Enviar" />
+       <Button fx:id="darkModeButton" layoutX="403.0" layoutY="14.0" mnemonicParsing="false" onAction="#toggleDarkMode" prefHeight="40.0" prefWidth="164.0" style="-fx-background-color: linear-gradient(to bottom, #E5E5EA, #D1D1D6);                     -fx-text-fill: black;                     -fx-font-size: 14px;                     -fx-font-weight: bold;                     -fx-background-radius: 20px;                     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 2);" text="Dark Mode 🌙" />
+    </Pane>
 </AnchorPane>

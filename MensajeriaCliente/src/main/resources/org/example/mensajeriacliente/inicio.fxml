@@ -7,28 +7,40 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.mensajeriacliente.controllers.InicioCon"
-            prefHeight="400.0" prefWidth="600.0">
+<AnchorPane
+        fx:id="anchorPane"
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:controller="org.example.mensajeriacliente.controllers.InicioCon"
+        prefHeight="600.0" prefWidth="800.0"
+        style="-fx-background-color: #F5F5F7;">
 
     <!-- Título -->
-    <Label layoutX="225.0" layoutY="10.0" text="Chat">
-        <font>
-            <Font size="38.0" />
-        </font>
-    </Label>
+    <Label fx:id="contactosLabel" layoutX="400" layoutY="20.0" text="Chat"
+           style="-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-translate-x: -50%;"/>
 
-    <!-- Lista de usuarios -->
-    <ListView fx:id="listUsuarios" layoutX="30.0" layoutY="80.0" prefHeight="280.0" prefWidth="385.0" />
+    <!-- Contenedor izquierdo -->
+    <VBox fx:id="vBoxList" layoutX="30.0" layoutY="100.0" prefWidth="500.0" prefHeight="400.0"
+          style="-fx-background-color: white; -fx-background-radius: 10px; -fx-border-color: #D1D1D6; -fx-border-radius: 10px; -fx-padding: 10px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 8, 0, 0, 2);">
+        <ListView fx:id="listUsuarios" prefHeight="400.0" prefWidth="500.0"
+                  style="-fx-background-color: white; -fx-border-color: transparent; -fx-padding: 5px;"/>
+    </VBox>
 
     <!-- Botones -->
-    <HBox layoutX="30.0" layoutY="370.0" spacing="10">
-        <Button fx:id="btnModificar" text="Modificar usuario" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5px;"  onAction="#onModificar"/>
-        <Button fx:id="btnEliminar" text="Eliminar usuario" style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-background-radius: 5px;" onAction="#onEliminar" />
-        <Button fx:id="btnMostrar" text="Mostrar Usuario" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5px;" onAction="#onMostrarContacto" />
+    <VBox fx:id="vBoxButtons" layoutX="580.0" layoutY="180.0" spacing="20" prefWidth="180.0" prefHeight="250.0"
+          style="-fx-alignment: center;">
+        <Button fx:id="darkModeButton" layoutX="228.0" layoutY="26.0" onAction="#toggleDarkMode" style="-fx-background-color: #E5E5EA; -fx-font-size: 16; -fx-text-fill: #1D1D1F; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);" text=" Dark Mode 🌙" />
 
-        <Button fx:id="onSendMessage" text="Enviar mensaje" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5px;" onAction="#onSendMessage" />
-    </HBox>
+        <Button fx:id="onSendMessage" text="Enviar mensaje" onAction="#onSendMessage" prefWidth="180.0"
+                style="-fx-background-color: linear-gradient(to bottom, #007AFF, #005EC4); -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 12px; -fx-padding: 10px 20px;"/>
+
+        <Button fx:id="btnMostrar" text="Mostrar Usuario" onAction="#onMostrarContacto" prefWidth="180.0"
+                style="-fx-background-color: linear-gradient(to bottom, #007AFF, #005EC4); -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 12px; -fx-padding: 10px 20px;"/>
+
+        <Button fx:id="btnEliminar" text="Eliminar usuario" onAction="#onEliminar" prefWidth="180.0"
+                style="-fx-background-color: linear-gradient(to bottom, #FF3B30, #D32F2F); -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 12px; -fx-padding: 10px 20px;"/>
+
+        <Button fx:id="btnModificar" text="Modificar usuario" onAction="#onModificar" prefWidth="180.0"
+                style="-fx-background-color: linear-gradient(to bottom, #34C759, #28A745); -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 12px; -fx-padding: 10px 20px;"/>
+    </VBox>
 </AnchorPane>
-

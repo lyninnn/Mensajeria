@@ -1,5 +1,6 @@
 package org.example.mensajeriacliente;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,7 +10,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.example.mensajeriacliente.controllers.AppSettings;
 import org.example.mensajeriacliente.controllers.InicioCon;
 import org.example.mensajeriacliente.managers.ClienteManager;
 import org.example.mensajeriacliente.models.Usuario;
@@ -35,16 +39,28 @@ public class HelloController {
     private Label lblStatus; // Etiqueta para mostrar mensajes de estado
 
 
+    @FXML
+    private Button darkModeButton;
 
     @FXML
-    private void initialize() {
+    private BorderPane borderPane;
 
-    }
+    @FXML
+    private VBox vBox;
+
+    @FXML
+    private Label labelLogin;
+
+    private boolean isDarkMode = AppSettings.isDarkMode();
+
+
+
 
     @FXML
     private void iniciarSesion() throws IOException, ClassNotFoundException {
         String usuario = txtUsuario.getText();
         String password = txtPassword.getText();
+
 
         if (usuario.isEmpty() || password.isEmpty()) {
             mostrarAlerta("Error", "Por favor, completa todos los campos.", Alert.AlertType.WARNING);
@@ -63,6 +79,7 @@ public class HelloController {
             };
 
     }
+
     private void redirigirAInicio() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("inicio.fxml"));
@@ -102,5 +119,50 @@ public class HelloController {
         alerta.setTitle(titulo);
         alerta.setContentText(mensaje);
         alerta.showAndWait();
+    }
+
+
+    //Método para el DarkMode
+
+    @FXML
+    public void toggleDarkMode() {
+        if (isDarkMode) {
+            // Cambiar a modo claro
+            labelLogin.setStyle("-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-text-fill: 1D1D1F;");
+            borderPane.setStyle("-fx-background-color: #F2F2F7; -fx-padding: 40;");
+            vBox.setStyle("-fx-background-color: #F2F2F7;");
+            darkModeButton.setStyle("-fx-background-color: #1D1D1F; -fx-font-size: 16; -fx-text-fill: #E5E5EA; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+            darkModeButton.setText("Dark Mode 🌙");
+            AppSettings.setDarkMode(false);
+        } else {
+            // Cambiar a modo oscuro
+
+            labelLogin.setStyle("-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-text-fill: white;");
+            borderPane.setStyle("-fx-background-color: #333333; -fx-padding: 40;");
+            vBox.setStyle("-fx-background-color: #333333;");
+            darkModeButton.setStyle("-fx-background-color: #E5E5EA; -fx-font-size: 16; -fx-text-fill: 1D1D1F; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+            darkModeButton.setText("Light Mode ☀");
+            AppSettings.setDarkMode(true);
+        }
+
+        // Alternar el estado del modo
+        isDarkMode = !isDarkMode;
+    }
+
+    @FXML
+    private void initialize() {
+        if (AppSettings.isDarkMode() == false){
+            labelLogin.setStyle("-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-text-fill: black;");
+            borderPane.setStyle("-fx-background-color: #F2F2F7; -fx-padding: 40;");
+            vBox.setStyle("-fx-background-color: #F2F2F7;");
+            darkModeButton.setStyle("-fx-background-color: #1D1D1F; -fx-font-size: 16; -fx-text-fill: #E5E5EA; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+            darkModeButton.setText("Dark Mode 🌙");
+        }else{
+            labelLogin.setStyle("-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-text-fill: white;");
+            borderPane.setStyle("-fx-background-color: #333333; -fx-padding: 40;");
+            vBox.setStyle("-fx-background-color: #333333;");
+            darkModeButton.setStyle("-fx-background-color: #E5E5EA; -fx-font-size: 16; -fx-text-fill: 1D1D1F; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+            darkModeButton.setText("Light Mode ☀");
+        }
     }
 }

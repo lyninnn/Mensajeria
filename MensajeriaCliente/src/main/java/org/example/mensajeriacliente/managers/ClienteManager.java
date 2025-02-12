@@ -1,6 +1,7 @@
 package org.example.mensajeriacliente.managers;
 
 import org.example.mensajeriacliente.models.Mensaje;
+import org.example.mensajeriacliente.models.Sesion;
 import org.example.mensajeriacliente.models.Usuario;
 import org.example.mensajeriacliente.util.UsuarioActual;
 
@@ -51,6 +52,34 @@ public class ClienteManager {
             cerrarConexion(); // Asegurar que la conexión se cierre en caso de error
         }
         return false;
+    }
+
+    public static List<Sesion> mostrarSesion() throws IOException, ClassNotFoundException {
+        System.out.println("Conectado al servidor en " + host + ":" + puerto);
+        List<Sesion> listaUsuarios = new ArrayList<>();
+        listaUsuarios.clear();
+        // Enviar el comando LISTA al servidor
+        out.writeObject("LISTASESION");
+        out.flush();  // Asegurarse de que los datos se envíen inmediatamente
+
+        // Leer la respuesta del servidor
+        Object respuesta = in.readObject();
+        System.out.println("Respuesta recibida: " + respuesta);
+
+        // Verificar si la respuesta es del tipo esperado
+        if (respuesta instanceof List) {
+            listaUsuarios = (List<Sesion>) respuesta;
+            System.out.println("Número de usuarios recibidos: " + listaUsuarios.size());
+
+            // Depuración: Imprimir los usuarios recibidos
+            for (Usuario usuario : listaUsuarios) {
+                System.out.println("Usuario: " + usuario.getNombre());
+            }
+        } else {
+            System.err.println("El servidor no devolvió una lista.");
+        }
+
+        return listaUsuarios;
     }
 
     public static void cerrarConexion() {

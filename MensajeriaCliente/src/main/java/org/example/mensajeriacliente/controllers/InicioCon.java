@@ -6,10 +6,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example.mensajeriacliente.managers.ClienteManager;
 import org.example.mensajeriacliente.models.Usuario;
@@ -32,10 +31,46 @@ public class InicioCon {
     private Button btnMostrar;
 
 
+    @FXML
+    private Button darkModeButton;
+
+    @FXML
+    private Label contactosLabel;
+
+    @FXML
+    private VBox vBoxButtons;
+
+    @FXML
+    private VBox vBoxList;
+
+    @FXML
+    private AnchorPane anchorPane;
+
+    private boolean isDarkMode = AppSettings.isDarkMode();
+
+
     private ObservableList<Usuario> usuariosList = FXCollections.observableArrayList();
 
     @FXML
-    private void initialize() throws IOException, ClassNotFoundException {
+    private void initialize() throws IOException, ClassNotFoundException{
+
+
+        if (AppSettings.isDarkMode() == false){
+            anchorPane.setStyle("-fx-background-color: #F2F2F7;");
+            contactosLabel.setStyle("-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-text-fill: black;");
+            vBoxList.setStyle("-fx-background-color: #F2F2F7;");
+            vBoxButtons.setStyle("-fx-background-color: #F2F2F7;");
+            darkModeButton.setStyle("-fx-background-color: #1D1D1F; -fx-font-size: 16; -fx-text-fill: #E5E5EA; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+            darkModeButton.setText("Dark Mode 🌙");
+        }else{
+            anchorPane.setStyle("-fx-background-color: #333333;");
+            contactosLabel.setStyle("-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-text-fill: white;");
+            vBoxList.setStyle("-fx-background-color: #333333;");
+            vBoxButtons.setStyle("-fx-background-color: #333333;");
+            darkModeButton.setStyle("-fx-background-color: #E5E5EA; -fx-font-size: 16; -fx-text-fill: 1D1D1F; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+            darkModeButton.setText("Light Mode ☀");
+        }
+
         cargarUsuarios();
     }
 
@@ -43,7 +78,7 @@ public class InicioCon {
 
     private void cargarUsuarios() throws IOException, ClassNotFoundException {
         usuariosList.clear();
-        List<Usuario> usuarios = ClienteManager.mostrarListaUsuario();  // Suponiendo que tienes un método en UsuarioDAO para obtener todos los usuarios
+        List<Usuario> usuarios = (List<Usuario>) ClienteManager.mostrarListaUsuario();  // Suponiendo que tienes un método en UsuarioDAO para obtener todos los usuarios
         System.out.println(usuarios.size());
         usuariosList.setAll(usuarios);
         listUsuarios.setItems(usuariosList);
@@ -81,7 +116,7 @@ public class InicioCon {
                 Parent root = fxmlLoader.load();
 
                 // Obtener el controlador asociado al archivo FXML
-                UsuarioView UsuarioCon = fxmlLoader.getController();
+                UsuarioController UsuarioCon = fxmlLoader.getController();
 
                 // Pasar los datos del cliente seleccionado al controlador
                 UsuarioCon.rellenar(usuarioSeleccionado);
@@ -145,4 +180,33 @@ public class InicioCon {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+
+    @FXML
+    public void toggleDarkMode() {
+        if (isDarkMode) {
+            // Cambiar a modo claro
+            anchorPane.setStyle("-fx-background-color: #F2F2F7;");
+            contactosLabel.setStyle("-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-text-fill: 1D1D1F;");
+            vBoxList.setStyle("-fx-background-color: #F2F2F7;");
+            vBoxButtons.setStyle("-fx-background-color: #F2F2F7;");
+            darkModeButton.setStyle("-fx-background-color: #1D1D1F; -fx-font-size: 16; -fx-text-fill: #E5E5EA; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+            darkModeButton.setText("Dark Mode 🌙");
+            AppSettings.setDarkMode(false);
+        } else {
+            // Cambiar a modo oscuro
+            anchorPane.setStyle("-fx-background-color: #333333;");
+            contactosLabel.setStyle("-fx-font-size: 42px; -fx-font-family: 'SF Pro Display', Helvetica, Arial, sans-serif; -fx-text-fill: #1D1D1F; -fx-font-weight: bold; -fx-text-fill: white;");
+            vBoxList.setStyle("-fx-background-color: #333333;");
+            vBoxButtons.setStyle("-fx-background-color: #333333;");
+            darkModeButton.setStyle("-fx-background-color: #E5E5EA; -fx-font-size: 16; -fx-text-fill: 1D1D1F; -fx-background-radius: 20; -fx-padding: 5 15; -fx-border-color: transparent; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+            darkModeButton.setText("Light Mode ☀");
+            AppSettings.setDarkMode(true);
+        }
+
+        // Alternar el estado del modo
+        isDarkMode = !isDarkMode;
+    }
+
+
 }

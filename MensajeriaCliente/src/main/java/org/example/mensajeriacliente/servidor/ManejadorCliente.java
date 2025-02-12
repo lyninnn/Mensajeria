@@ -19,12 +19,13 @@ public class ManejadorCliente implements Runnable {
     private Connection conexionDB;
     private List<Usuario> usuarioList = new ArrayList<>();
     private List<Mensaje> mensajeList = new ArrayList<>();
+    private List<Mensaje> sesionList = new ArrayList<>();
 
     public ManejadorCliente(Socket clienteSocket) {
         this.clienteSocket = clienteSocket;
         try {
             // Configuración de la conexión a la base de datos
-            this.conexionDB = DriverManager.getConnection("jdbc:mysql://localhost:3306/MensajeriaOnline", "root", "");
+            this.conexionDB = DriverManager.getConnection("jdbc:mysql://localhost:3306/MensajeriaOnline", "root", "1234");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -50,6 +51,7 @@ public class ManejadorCliente implements Runnable {
 
                         if (autenticado) {
                             UsuarioActual.setUsuarioA(buscarUsuarioPorNombre(usuarioLogin.getNombre()));
+                            insertarSesion(UsuarioActual.getUsuarioA().getId());
                         }
                         break;
 
@@ -61,6 +63,12 @@ public class ManejadorCliente implements Runnable {
                     case "LISTA":
                         listaUsuario();
                         out.writeObject(usuarioList);
+                        System.out.println("Número de usuarios en el servidor: " + usuarioList.size());
+                        break;
+                        
+                    case "LISTASESION":
+                        listaSesion();
+                        out.writeObject(sesionList);
                         System.out.println("Número de usuarios en el servidor: " + usuarioList.size());
                         break;
 
@@ -147,12 +155,40 @@ public class ManejadorCliente implements Runnable {
         } finally {
             try {
                 clienteSocket.close(); // Cerrar el socket al salir del bucle
+                actualizarSesion(UsuarioActual.getUsuarioA().getId());
                 System.out.println("Conexión cerrada con el cliente: " + clienteSocket.getInetAddress());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
+    private void listaSesion() {
+    }
+
+    public boolean insertarSesion(int userId) {
+        String query = "INSERT INTO sesiones (userId) VALUES (?)";
+        try (PreparedStatement stmt = conexionDB.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean actualizarSesion(int userId) {
+        String updateQuery = "UPDATE sesiones SET modified = CURRENT_TIMESTAMP WHERE userId = ?";
+        try (PreparedStatement updateStmt = conexionDB.prepareStatement(updateQuery)) {
+            updateStmt.setInt(1, userId);
+            int filasAfectadas = updateStmt.executeUpdate();
+            return filasAfectadas > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     private Usuario buscarUsuarioPorNombre(String nombre) {
         try {
