@@ -11,6 +11,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example.mensajeriacliente.managers.ClienteManager;
+import org.example.mensajeriacliente.models.Sesion;
 import org.example.mensajeriacliente.models.Usuario;
 import org.example.mensajeriacliente.util.UsuarioActual;
 
@@ -21,6 +22,8 @@ public class InicioCon {
     FXMLLoader fxmlLoader = null;
     @FXML
     private ListView<Usuario> listUsuarios;
+    @FXML
+    private ListView<Sesion> listSesion;
     @FXML
     private TextField txtMessage;
     @FXML
@@ -48,7 +51,7 @@ public class InicioCon {
 
     private boolean isDarkMode = AppSettings.isDarkMode();
 
-
+    private ObservableList<Sesion> sesionList = FXCollections.observableArrayList();
     private ObservableList<Usuario> usuariosList = FXCollections.observableArrayList();
 
     @FXML
@@ -72,6 +75,15 @@ public class InicioCon {
         }
 
         cargarUsuarios();
+        cargarSesion();
+    }
+
+    private void cargarSesion() throws IOException, ClassNotFoundException {
+        sesionList.clear();
+        List<Sesion> sesiones = (List<Sesion>) ClienteManager.mostrarSesion();  // Suponiendo que tienes un método en UsuarioDAO para obtener todos los usuarios
+        System.out.println(sesiones.size());
+        sesionList.setAll(sesiones);
+        listSesion.setItems(sesionList);
     }
 
 

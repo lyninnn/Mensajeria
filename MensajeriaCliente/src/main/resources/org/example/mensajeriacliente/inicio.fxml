@@ -24,6 +24,8 @@
           style="-fx-background-color: white; -fx-background-radius: 10px; -fx-border-color: #D1D1D6; -fx-border-radius: 10px; -fx-padding: 10px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 8, 0, 0, 2);">
         <ListView fx:id="listUsuarios" prefHeight="400.0" prefWidth="500.0"
                   style="-fx-background-color: white; -fx-border-color: transparent; -fx-padding: 5px;"/>
+        <ListView fx:id="listSesion" prefHeight="400.0" prefWidth="800.0"
+                  style="-fx-background-color: white; -fx-border-color: transparent; -fx-padding: 5px;"/>
     </VBox>
 
     <!-- Botones -->

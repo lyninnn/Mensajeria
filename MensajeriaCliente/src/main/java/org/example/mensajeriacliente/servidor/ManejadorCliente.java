@@ -1,5 +1,6 @@
 package org.example.mensajeriacliente.servidor;
 import org.example.mensajeriacliente.models.Mensaje;
+import org.example.mensajeriacliente.models.Sesion;
 import org.example.mensajeriacliente.util.UsuarioActual;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.example.mensajeriacliente.models.Usuario;
@@ -19,7 +20,7 @@ public class ManejadorCliente implements Runnable {
     private Connection conexionDB;
     private List<Usuario> usuarioList = new ArrayList<>();
     private List<Mensaje> mensajeList = new ArrayList<>();
-    private List<Mensaje> sesionList = new ArrayList<>();
+    private List<Sesion> sesionList = new ArrayList<>();
 
     public ManejadorCliente(Socket clienteSocket) {
         this.clienteSocket = clienteSocket;
@@ -163,7 +164,33 @@ public class ManejadorCliente implements Runnable {
         }
     }
 
-    private void listaSesion() {
+    private List<Sesion> listaSesion() {
+        try {
+            System.out.println("Ejecutando consulta para obtener usuarios...");
+            String query = "SELECT * FROM sesiones";
+            PreparedStatement stmt = conexionDB.prepareStatement(query);
+            System.out.println("estoy aqui");
+            ResultSet rs = stmt.executeQuery();
+
+            sesionList.clear(); // Asegúrate de limpiar la lista antes de llenarla
+            System.out.println("estoy aqui2");
+            while (rs.next()) {
+                Sesion sesion = new Sesion();
+                sesion.setIdSession(rs.getInt(0));
+                sesion.setUserId(rs.getInt(1));
+                sesion.setModified(rs.getTimestamp(2));
+                sesionList.add(sesion);
+            }
+
+            System.out.println("Número de usuarios encontrados: " + usuarioList.size());
+
+        } catch (SQLException e) {
+            System.err.println("Error al ejecutar la consulta: " + e.getMessage());
+        }
+
+        return sesionList;
+
+
     }
 
     public boolean insertarSesion(int userId) {

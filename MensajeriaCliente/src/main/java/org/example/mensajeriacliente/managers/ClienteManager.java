@@ -56,8 +56,8 @@ public class ClienteManager {
 
     public static List<Sesion> mostrarSesion() throws IOException, ClassNotFoundException {
         System.out.println("Conectado al servidor en " + host + ":" + puerto);
-        List<Sesion> listaUsuarios = new ArrayList<>();
-        listaUsuarios.clear();
+        List<Sesion> listaSesion = new ArrayList<>();
+        listaSesion.clear();
         // Enviar el comando LISTA al servidor
         out.writeObject("LISTASESION");
         out.flush();  // Asegurarse de que los datos se envíen inmediatamente
@@ -68,18 +68,18 @@ public class ClienteManager {
 
         // Verificar si la respuesta es del tipo esperado
         if (respuesta instanceof List) {
-            listaUsuarios = (List<Sesion>) respuesta;
-            System.out.println("Número de usuarios recibidos: " + listaUsuarios.size());
+            listaSesion = (List<Sesion>) respuesta;
+            System.out.println("Número de usuarios recibidos: " + listaSesion.size());
 
             // Depuración: Imprimir los usuarios recibidos
-            for (Usuario usuario : listaUsuarios) {
-                System.out.println("Usuario: " + usuario.getNombre());
+            for (Sesion usuario : listaSesion) {
+                System.out.println("Usuario: " + usuario.getUserId());
             }
         } else {
             System.err.println("El servidor no devolvió una lista.");
         }
 
-        return listaUsuarios;
+        return listaSesion;
     }
 
     public static void cerrarConexion() {
