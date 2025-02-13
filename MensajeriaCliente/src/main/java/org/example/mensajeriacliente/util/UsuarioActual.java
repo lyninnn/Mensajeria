@@ -3,43 +3,31 @@ package org.example.mensajeriacliente.util;
 import org.example.mensajeriacliente.models.Usuario;
 
 public class UsuarioActual {
-    private static Usuario usuarioA;
-    private static Usuario receptor;
+    private Usuario usuarioActual;
+    private Usuario receptor;
 
-    // Obtener el usuario actual
-    public static Usuario getUsuarioA() {
-        if (usuarioA == null) {
-            throw new IllegalStateException("No hay un usuario autenticado.");
-        }
-        return usuarioA;
+    public UsuarioActual(Usuario usuarioActual, Usuario receptor) {
+        this.usuarioActual = usuarioActual;
+        this.receptor = receptor;
     }
 
-    // Establecer el usuario actual
-    public static void setUsuarioA(Usuario usuario) {
-        if (usuario == null) {
-            throw new IllegalArgumentException("El usuario no puede ser nulo.");
-        }
-        usuarioA = usuario;
+    public UsuarioActual() {
     }
 
-    // Limpiar el usuario actual (por ejemplo, al cerrar sesión)
-    public static void clearUsuarioA() {
-        usuarioA = null;
+    public Usuario getUsuarioA() {
+        return usuarioActual;
     }
 
-
-    public static Usuario getReceptor() {
-        if (receptor == null) {
-            throw new IllegalStateException("No hay un usuario autenticado.");
-        }
+    public Usuario getReceptor() {
         return receptor;
     }
 
-    // Establecer el usuario actual
-    public static void setReceptor(Usuario usuario) {
-        if (usuario == null) {
-            throw new IllegalArgumentException("El usuario no puede ser nulo.");
-        }
-        receptor = usuario;
+    public void setUsuarioA(Usuario usuarioActual) {
+        this.usuarioActual = usuarioActual;
+    }
+
+    public void setReceptor(Usuario receptor) {
+        this.receptor = receptor;
     }
 }
+

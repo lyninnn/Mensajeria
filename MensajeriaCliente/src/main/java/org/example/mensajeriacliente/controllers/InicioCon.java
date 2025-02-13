@@ -16,6 +16,7 @@ import org.example.mensajeriacliente.models.Usuario;
 import org.example.mensajeriacliente.util.UsuarioActual;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class InicioCon {
@@ -23,7 +24,7 @@ public class InicioCon {
     @FXML
     private ListView<Usuario> listUsuarios;
     @FXML
-    private ListView<Sesion> listSesion;
+    private ListView<String> listSesion;
     @FXML
     private TextField txtMessage;
     @FXML
@@ -45,6 +46,8 @@ public class InicioCon {
 
     @FXML
     private VBox vBoxList;
+
+    private UsuarioActual usuarioActual=new UsuarioActual();
 
     @FXML
     private AnchorPane anchorPane;
@@ -80,11 +83,21 @@ public class InicioCon {
 
     private void cargarSesion() throws IOException, ClassNotFoundException {
         sesionList.clear();
-        List<Sesion> sesiones = (List<Sesion>) ClienteManager.mostrarSesion();  // Suponiendo que tienes un método en UsuarioDAO para obtener todos los usuarios
-        System.out.println(sesiones.size());
-        sesionList.setAll(sesiones);
-        listSesion.setItems(sesionList);
+        List<Sesion> sesiones = (List<Sesion>) ClienteManager.mostrarSesion();
+
+        // Crear una lista con nombres de usuario y timestamps para mostrar
+        List<String> sesionesConNombres = new ArrayList<>();
+
+        for (Sesion sesion : sesiones) {
+            Usuario nombreUsuario = ClienteManager.obtenerUsuarioPorId(sesion.getUserId()); // Obtener el nombre por ID
+            String sesionInfo = nombreUsuario.getNombre() + " | Última sesión: " + sesion.getModified();
+            sesionesConNombres.add(sesionInfo);
+        }
+
+        // Mostrar en la lista
+        listSesion.getItems().setAll(sesionesConNombres);
     }
+
 
 
 
@@ -157,20 +170,17 @@ public class InicioCon {
 
     // Método para enviar un mensaje al usuario
     @FXML
-    public void onSendMessage() {
+    public void onSendMessage() throws IOException {
         Usuario usuarioSeleccionado = listUsuarios.getSelectionModel().getSelectedItem();
-        UsuarioActual.setReceptor(usuarioSeleccionado);
+        ClienteManager.empezarChat(usuarioSeleccionado);
+
         if (usuarioSeleccionado != null) {
             try {
-                // Inicializar el FXMLLoader y cargar el archivo FXML
-                fxmlLoader = new FXMLLoader(getClass().getResource("/org/example/mensajeriacliente/mensajeView.fxml"));
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/example/mensajeriacliente/mensajeView.fxml"));
                 Parent root = fxmlLoader.load();
 
 
-                // Pasar los datos del cliente seleccionado al controlador
-
-
-                // Cambiar a la nueva vista (opcional, según tu flujo de trabajo)
+                // Cambiar a la nueva vista
                 Stage stage = (Stage) listUsuarios.getScene().getWindow();
                 Scene scene = new Scene(root);
                 stage.setScene(scene);
@@ -182,8 +192,8 @@ public class InicioCon {
         } else {
             mostrarAlerta("Error", "Seleccione un cliente para actualizar.");
         }
-
     }
+
 
     // Método para mostrar alertas
     private void mostrarAlerta(String titulo, String mensaje) {

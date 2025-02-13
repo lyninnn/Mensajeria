@@ -15,6 +15,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example.mensajeriacliente.controllers.AppSettings;
 import org.example.mensajeriacliente.controllers.InicioCon;
+import org.example.mensajeriacliente.controllers.MensajeView;
+import org.example.mensajeriacliente.controllers.UsuarioController;
 import org.example.mensajeriacliente.managers.ClienteManager;
 import org.example.mensajeriacliente.models.Usuario;
 import org.example.mensajeriacliente.util.UsuarioActual;
@@ -38,7 +40,7 @@ public class HelloController {
     @FXML
     private Label lblStatus; // Etiqueta para mostrar mensajes de estado
 
-
+    private UsuarioActual usuarioActual= new UsuarioActual();
     @FXML
     private Button darkModeButton;
 
@@ -53,7 +55,7 @@ public class HelloController {
 
     private boolean isDarkMode = AppSettings.isDarkMode();
 
-
+    private ClienteManager clienteManager =new ClienteManager();
 
 
     @FXML
@@ -74,7 +76,9 @@ public class HelloController {
 
             if (ClienteManager.login(usuario, password)){
                 Usuario usuario1 = ClienteManager.encontrarUsuario(usuario);
-                UsuarioActual.setUsuarioA( usuario1);
+
+                usuarioActual.setUsuarioA( usuario1);
+
                 redirigirAInicio();
             };
 

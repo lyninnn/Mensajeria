@@ -16,7 +16,10 @@ public class ClienteManager {
     private static Socket socket;
     private static ObjectOutputStream out;
     private static ObjectInputStream in;
+    private static int idUser;
     private static boolean conectado = false;
+
+
 
     // Método estático para iniciar el cliente
     public static boolean login(String nombre, String contraseña) {
@@ -57,30 +60,33 @@ public class ClienteManager {
     public static List<Sesion> mostrarSesion() throws IOException, ClassNotFoundException {
         System.out.println("Conectado al servidor en " + host + ":" + puerto);
         List<Sesion> listaSesion = new ArrayList<>();
-        listaSesion.clear();
-        // Enviar el comando LISTA al servidor
+        listaSesion.clear(); // Limpiar la lista
+
+        // Enviar el comando LISTASESION al servidor
         out.writeObject("LISTASESION");
         out.flush();  // Asegurarse de que los datos se envíen inmediatamente
 
         // Leer la respuesta del servidor
-        Object respuesta = in.readObject();
+        Object respuesta = in.readObject(); // No es necesario hacer el casting aquí, ya que lo hacemos más tarde
         System.out.println("Respuesta recibida: " + respuesta);
 
         // Verificar si la respuesta es del tipo esperado
         if (respuesta instanceof List) {
+            // Ahora hacemos el cast seguro después de la comprobación
             listaSesion = (List<Sesion>) respuesta;
-            System.out.println("Número de usuarios recibidos: " + listaSesion.size());
+            System.out.println("Número de sesiones recibidas: " + listaSesion.size());
 
-            // Depuración: Imprimir los usuarios recibidos
-            for (Sesion usuario : listaSesion) {
-                System.out.println("Usuario: " + usuario.getUserId());
+            // Depuración: Imprimir las sesiones recibidas
+            for (Sesion sesion : listaSesion) {
+                System.out.println("Sesión: UserId = " + sesion.getUserId() + ", Modified = " + sesion.getModified());
             }
         } else {
-            System.err.println("El servidor no devolvió una lista.");
+            System.err.println("El servidor no devolvió una lista de sesiones.");
         }
 
         return listaSesion;
     }
+
 
     public static void cerrarConexion() {
         try {
@@ -170,15 +176,16 @@ public class ClienteManager {
 
         return listaUsuarios;
     }
-    // Método estático para listar los mensajes
-    public static List<Mensaje> listarMensajes(int idUsuario) throws IOException, ClassNotFoundException {
 
-        System.out.println(UsuarioActual.getUsuarioA());
+
+
+    // Método estático para listar los mensajes
+    public static List<Mensaje> listarMensajes() throws IOException, ClassNotFoundException {
+
         out.writeObject("OBTENER_MENSAJES");
         out.flush();
 
-        out.writeObject(idUsuario);  // Enviar el id del usuario para listar los mensajes
-        out.flush();
+
 
         // Leer la respuesta del servidor
         Object respuesta = in.readObject();
@@ -284,6 +291,19 @@ public class ClienteManager {
     }
 
 
+    public static Usuario obtenerUsuarioPorId(int userId) throws IOException, ClassNotFoundException {
+        out.writeObject("NOMBRE");
+        out.writeObject(userId);
+        out.flush();
 
+        Usuario usuario = (Usuario)in.readObject();
+        return usuario;
+    }
 
+    public static void empezarChat(Usuario usuario) throws IOException {
+        out.writeObject("CHAT");
+        out.writeObject(usuario);
+        out.flush();
+
+    }
 }

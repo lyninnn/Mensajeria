@@ -1,4 +1,5 @@
 package org.example.mensajeriacliente.servidor;
+import org.example.mensajeriacliente.managers.ClienteManager;
 import org.example.mensajeriacliente.models.Mensaje;
 import org.example.mensajeriacliente.models.Sesion;
 import org.example.mensajeriacliente.util.UsuarioActual;
@@ -26,7 +27,7 @@ public class ManejadorCliente implements Runnable {
         this.clienteSocket = clienteSocket;
         try {
             // Configuración de la conexión a la base de datos
-            this.conexionDB = DriverManager.getConnection("jdbc:mysql://localhost:3306/MensajeriaOnline", "root", "1234");
+            this.conexionDB = ConexionDB.getConnection();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -35,6 +36,7 @@ public class ManejadorCliente implements Runnable {
     @Override
     public void run() {
         boolean continuar = true; // Bandera para controlar el bucle
+        UsuarioActual usuarioActual=new UsuarioActual();
 
         try {
             out = new ObjectOutputStream(clienteSocket.getOutputStream());
@@ -47,13 +49,16 @@ public class ManejadorCliente implements Runnable {
                     case "LOGIN":
                         Usuario usuarioLogin = (Usuario) in.readObject();
                         boolean autenticado = autenticarUsuario(usuarioLogin);
+                        usuarioActual.setUsuarioA(buscarUsuarioPorNombre(usuarioLogin.getNombre()));
+
                         out.writeObject(autenticado ? "OK" : "ERROR: Credenciales incorrectas");
                         out.flush();
 
-                        if (autenticado) {
-                            UsuarioActual.setUsuarioA(buscarUsuarioPorNombre(usuarioLogin.getNombre()));
-                            insertarSesion(UsuarioActual.getUsuarioA().getId());
-                        }
+                        break;
+
+                    case "NOMBRE":
+                        int idUsuario = (int) in.readObject();
+                        out.writeObject(buscarUsuarioPorId(idUsuario));
                         break;
 
                     case "REGISTER":
@@ -66,12 +71,13 @@ public class ManejadorCliente implements Runnable {
                         out.writeObject(usuarioList);
                         System.out.println("Número de usuarios en el servidor: " + usuarioList.size());
                         break;
-                        
+
                     case "LISTASESION":
-                        listaSesion();
-                        out.writeObject(sesionList);
-                        System.out.println("Número de usuarios en el servidor: " + usuarioList.size());
+                        listaSesion(); // Llama a la función que obtiene las sesiones
+                        out.writeObject(sesionList); // Envía la lista de sesiones al cliente
+                        System.out.println("Número de sesiones en el servidor: " + sesionList.size()); // Corregir nombre de lista
                         break;
+
 
                     case "ELIMINAR":
                         Usuario usuarioEliminar = (Usuario) in.readObject();
@@ -98,7 +104,7 @@ public class ManejadorCliente implements Runnable {
                     case "ENVIAR_MENSAJE":
                         Mensaje mensaje = (Mensaje) in.readObject();
 
-                        boolean mensajeEnviado = enviarMensaje(mensaje.getIdTransmitter(), mensaje.getIdReceiver(),mensaje.getMsgText());
+                        boolean mensajeEnviado = enviarMensaje(usuarioActual.getUsuarioA().getId(), usuarioActual.getReceptor().getId(),mensaje.getMsgText());
                         out.writeObject(mensajeEnviado ? "Mensaje enviado" : "Error al enviar el mensaje");
                         break;
                     case "MARCAR_ENTREGADO":
@@ -118,28 +124,23 @@ public class ManejadorCliente implements Runnable {
                             out.writeObject("ERROR: " + e.getMessage());
                         }
                         break;
+                    case "CHAT":
+                        Usuario idR = (Usuario)in.readObject();  // Recibir ID del mensaje
+                        usuarioActual.setReceptor(idR);
+                        System.out.println(idR);
+                        break;
 
 
                     case "OBTENER_MENSAJES":
                         try {
-                            // Verificar que el usuario esté autenticado
-                            Usuario usuarioActual = UsuarioActual.getUsuarioA();
-                            if (usuarioActual == null) {
-                                out.writeObject("ERROR: No hay un usuario autenticado.");
-                                break;
-                            }
 
-                            // Recibir el ID del receptor
-                            int idReceptor = (int) in.readObject();
-                            System.out.println(idReceptor);
                             // Obtener los mensajes entre el emisor y el receptor
-                            List<Mensaje> mensajes = obtenerMensajes(usuarioActual.getId(), idReceptor);
+                            List<Mensaje> mensajes = obtenerMensajes(usuarioActual.getUsuarioA().getId(),usuarioActual.getReceptor().getId());
                             System.out.println("Mensajes obtenidos: " + mensajes);
-
+                            System.out.println(usuarioActual.getUsuarioA());
+                            System.out.println("receptor"+ usuarioActual.getReceptor());
                             // Enviar la lista de mensajes al cliente
                             out.writeObject(mensajes);
-                        } catch (ClassNotFoundException e) {
-                            out.writeObject("ERROR: Tipo de dato inesperado.");
                         } catch (IOException e) {
                             System.err.println("Error al enviar/recibir datos: " + e.getMessage());
                         }
@@ -156,7 +157,9 @@ public class ManejadorCliente implements Runnable {
         } finally {
             try {
                 clienteSocket.close(); // Cerrar el socket al salir del bucle
-                actualizarSesion(UsuarioActual.getUsuarioA().getId());
+                if (usuarioActual.getUsuarioA()!=null){
+                actualizarSesion(usuarioActual.getUsuarioA().getId());
+                }
                 System.out.println("Conexión cerrada con el cliente: " + clienteSocket.getInetAddress());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -166,31 +169,46 @@ public class ManejadorCliente implements Runnable {
 
     private List<Sesion> listaSesion() {
         try {
-            System.out.println("Ejecutando consulta para obtener usuarios...");
+            System.out.println("Ejecutando consulta para obtener sesiones...");
             String query = "SELECT * FROM sesiones";
             PreparedStatement stmt = conexionDB.prepareStatement(query);
             System.out.println("estoy aqui");
+
             ResultSet rs = stmt.executeQuery();
 
             sesionList.clear(); // Asegúrate de limpiar la lista antes de llenarla
             System.out.println("estoy aqui2");
+
             while (rs.next()) {
                 Sesion sesion = new Sesion();
-                sesion.setIdSession(rs.getInt(0));
-                sesion.setUserId(rs.getInt(1));
-                sesion.setModified(rs.getTimestamp(2));
+                sesion.setIdSession(rs.getInt("idSession")); // Corregir índice para el idSession
+                sesion.setUserId(rs.getInt("userId"));       // Corregir índice para userId
+                sesion.setModified(rs.getTimestamp("modified")); // Corregir índice para modified
                 sesionList.add(sesion);
             }
 
-            System.out.println("Número de usuarios encontrados: " + usuarioList.size());
+            System.out.println("Número de sesiones encontradas: " + sesionList.size()); // Corregir nombre de la lista
 
         } catch (SQLException e) {
             System.err.println("Error al ejecutar la consulta: " + e.getMessage());
         }
 
         return sesionList;
+    }
 
 
+    private boolean sesionExiste(int userId) {
+        String query = "SELECT COUNT(*) FROM sesiones WHERE userId = ?";
+        try (PreparedStatement stmt = conexionDB.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0; // Retorna true si hay al menos 1 sesión
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public boolean insertarSesion(int userId) {
@@ -223,6 +241,32 @@ public class ManejadorCliente implements Runnable {
             String query = "SELECT * FROM Usuarios WHERE name = ?";
             PreparedStatement stmt = conexionDB.prepareStatement(query);
             stmt.setString(1, nombre);
+            ResultSet rs = stmt.executeQuery();
+
+            // Si se encuentra un usuario, crear el objeto Usuario
+            if (rs.next()) {
+                Usuario usuarioEncontrado = new Usuario();
+                usuarioEncontrado.setId(rs.getInt("IdUser"));
+                usuarioEncontrado.setNombre(rs.getString("name"));
+                usuarioEncontrado.setContrasenia(rs.getString("password"));
+                usuarioEncontrado.setLastLogin(rs.getDate("last_Online").toLocalDate());
+                usuarioEncontrado.setTelefono(rs.getString("telefono"));
+                return usuarioEncontrado;
+            } else {
+                return null;  // Si no se encuentra el usuario, retornar null
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;  // Retornar null en caso de error
+        }
+    }
+
+    private Usuario buscarUsuarioPorId(int id) {
+        try {
+            // Consulta SQL para buscar el usuario por ID
+            String query = "SELECT * FROM Usuarios WHERE IdUser = ?";
+            PreparedStatement stmt = conexionDB.prepareStatement(query);
+            stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
 
             // Si se encuentra un usuario, crear el objeto Usuario
@@ -399,6 +443,7 @@ public class ManejadorCliente implements Runnable {
     }
 
     private List<Mensaje> obtenerMensajes(int idTransmitter, int idReceiver) {
+        System.out.println(idTransmitter+"y id receiver: "+idReceiver);
         List<Mensaje> mensajes = new ArrayList<>();
         try {
             // Consulta los mensajes entre el emisor y el receptor
@@ -409,8 +454,11 @@ public class ManejadorCliente implements Runnable {
 
             // Establecer los parámetros de la consulta
 
+            System.out.println("idTransmitter: " + idTransmitter);
+            System.out.println("idReceiver: " + idReceiver);
             stmt.setInt(1, idTransmitter);
             stmt.setInt(2, idReceiver);
+
             stmt.setInt(3, idReceiver);
             stmt.setInt(4, idTransmitter);
 
