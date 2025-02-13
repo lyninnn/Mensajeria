@@ -44,6 +44,7 @@ public class MensajeView {
 
     @FXML
     private void initialize() {
+
        cargarMensajes();
         iniciarEscuchaMensajes();
     }
@@ -53,7 +54,15 @@ public class MensajeView {
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 List<Mensaje> mensajes = ClienteManager.listarMensajes();
-                Platform.runLater(() -> actualizarMensajesEnVista(mensajes));
+                Platform.runLater(() -> {
+                    try {
+                        actualizarMensajesEnVista(mensajes);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -112,7 +121,15 @@ public class MensajeView {
                     List<Mensaje> mensajes = ClienteManager.listarMensajes();
 
                     // Actualizar la interfaz solo si hay nuevos mensajes
-                    Platform.runLater(() -> actualizarMensajesEnVista(mensajes));
+                    Platform.runLater(() -> {
+                        try {
+                            actualizarMensajesEnVista(mensajes);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
 
                     // Esperar un poco antes de hacer la siguiente consulta
                     Thread.sleep(1000);  // Espera de 1 segundo, puedes ajustarlo según tus necesidades
@@ -125,7 +142,7 @@ public class MensajeView {
         hiloEscucha.start();
     }
 
-    private void actualizarMensajesEnVista(List<Mensaje> mensajes) {
+    private void actualizarMensajesEnVista(List<Mensaje> mensajes) throws IOException, ClassNotFoundException {
         listViewMensajes.getItems().clear();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -133,13 +150,11 @@ public class MensajeView {
 //            if (mensaje.getIdTransmitter() == usuarioActual.getUsuarioA().getId() ||
 //                    mensaje.getIdReceiver() == usuarioActual.getUsuarioA().getId()) {
 
-                // Formatear la fecha y hora
-                String fechaHora = mensaje.getTimeStamp().format(formatter);
-
-                // Construir el mensaje con la fecha
-                String mensajeTexto = ( mensaje.getMsgText())
-                        + " [" + fechaHora + "]"+" ["+mensaje.getState()+"]";
-
+            String actuar=ClienteManager.obtenerUsuarioPorId(mensaje.getIdTransmitter()).getNombre();
+            String receptor=ClienteManager.obtenerUsuarioPorId(mensaje.getIdReceiver()).getNombre();
+            String fechaHora = mensaje.getTimeStamp().format(formatter);
+            String mensajeTexto = actuar+": "+mensaje.getMsgText()
+                    + " [" + fechaHora + "]";
                 // Agregar mensaje a la lista
                 listViewMensajes.getItems().add(mensajeTexto);
             }
@@ -167,16 +182,24 @@ public class MensajeView {
 //                            e.printStackTrace();
 //                        }
 //                    }
+                    try {
+                        String actuar=ClienteManager.obtenerUsuarioPorId(mensaje.getIdTransmitter()).getNombre();
+                        String receptor=ClienteManager.obtenerUsuarioPorId(mensaje.getIdReceiver()).getNombre();
+                        String fechaHora = mensaje.getTimeStamp().format(formatter);
+                        String mensajeTexto = actuar+": "+mensaje.getMsgText()
+                                + " [" + fechaHora + "]";
 
 
-                    String fechaHora = mensaje.getTimeStamp().format(formatter);
-                    String mensajeTexto = (mensaje.getMsgText())
-                            + " [" + fechaHora + "]" + " [" + mensaje.getState() + "]";
-
-
-                    if (!listViewMensajes.getItems().contains(mensajeTexto)) {
-                        listViewMensajes.getItems().add(mensajeTexto);
+                        if (!listViewMensajes.getItems().contains(mensajeTexto)) {
+                            listViewMensajes.getItems().add(mensajeTexto);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
                     }
+
+
                 }
             });
 
